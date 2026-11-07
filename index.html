@@ -309,6 +309,47 @@ fieldset legend{font-family:var(--f-display);font-size:1.1rem;font-weight:600;ma
 @media (max-width:440px){fieldset{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:no-preference){.drawer.anim{animation:slide .2s ease-out}@keyframes slide{from{transform:translateX(32px);opacity:.5}to{transform:none;opacity:1}}.toast{animation:pop .2s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}}
 
+/* Jours travaillés et semaines fériées */
+.toolbar #fWork{flex:0 1 210px}
+.daynote{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);font-size:13px}
+.daynote>svg{color:var(--fuel)}
+.daynote span{flex:1 1 260px;min-width:0;color:var(--muted)}
+.daynote span b{color:var(--ink)}
+.check{display:inline-flex;align-items:center;gap:8px;font-size:13px;margin-top:4px;cursor:pointer;font-weight:500;color:var(--ink)}
+.check input{width:16px;height:16px;accent-color:var(--accent);margin:0}
+.warnt{color:var(--warn)}
+.why{display:flex;align-items:center;gap:4px;color:var(--warn);font-size:11.5px;font-weight:600;margin-top:2px;white-space:normal}
+.why svg{width:12px;height:12px}
+.holpick{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end;padding:4px 16px 16px}
+.holchips{display:flex;flex-wrap:wrap;gap:8px;flex:1 1 520px;min-width:0}
+.holchip{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:1px;color:var(--ink)}
+.holchip b{font-size:13px;font-weight:700}
+.holchip span{font-size:11.5px;color:var(--muted)}
+.holchip:hover{border-color:var(--line-strong)}
+.holchip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.holchip[aria-pressed="true"] span{color:inherit;opacity:.75}
+.holchip.sun{opacity:.55}
+.holdate{flex:0 1 230px}
+.holweek .card-h h2{font-size:1.3rem}
+.holdays{display:flex;flex-wrap:wrap;gap:6px;flex-basis:100%}
+.dayt{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:12.5px;font-weight:600;background:var(--surface);cursor:pointer;color:var(--ink)}
+.dayt svg{width:13px;height:13px}
+.dayt[aria-pressed="true"]{background:var(--fuel-soft);border-color:color-mix(in srgb,var(--fuel-bar) 45%,transparent)}
+.dayt[aria-pressed="false"]{color:var(--muted);text-decoration:line-through}
+.dayt.off{cursor:default;color:var(--faint)}
+.holkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);border-radius:0 0 12px 12px;overflow:hidden}
+.hk{background:var(--surface);padding:12px 16px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.hk small{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.hk b{font-family:var(--f-display);font-size:1.75rem;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hk b span{font-size:.55em;color:var(--muted);margin-left:3px;font-weight:600}
+.hk em{font-style:normal;font-size:12px;color:var(--muted)}
+.hk em strong{color:var(--ink)}
+.hk.fuel b{color:var(--fuel)}
+.hk.volt b{color:var(--volt)}
+.hk.warn b{color:var(--warn)}
+.arrow{color:var(--faint);font-weight:400;margin:0 5px}
+.hk b .arrow{font-size:.7em;margin:0 6px}
+
 /* Toasts, dépôt de fichier */
 .toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;display:flex;flex-direction:column;gap:8px;width:min(520px,calc(100% - 32px))}
 .toast{display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);padding:11px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px}
@@ -356,6 +397,7 @@ fieldset legend{font-family:var(--f-display);font-size:1.1rem;font-weight:600;ma
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="collab" aria-selected="true">Collaborateurs <span class="count" id="cCollab"></span></button>
+    <button class="tab" role="tab" data-tab="feries" aria-selected="false">Jours fériés <span class="count" id="cHol"></span></button>
     <button class="tab" role="tab" data-tab="sites" aria-selected="false">Magasins <span class="count" id="cSites"></span></button>
     <button class="tab" role="tab" data-tab="veh" aria-selected="false">Véhicules <span class="count" id="cVeh"></span></button>
     <button class="tab" role="tab" data-tab="methode" aria-selected="false">Méthode &amp; réglages</button>
@@ -365,13 +407,34 @@ fieldset legend{font-family:var(--f-display);font-size:1.1rem;font-weight:600;ma
     <div class="toolbar">
       <div class="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="Nom, ville, matricule, véhicule…" aria-label="Rechercher"><kbd>/</kbd></div>
       <select id="fSite" aria-label="Filtrer par magasin"></select>
+      <select id="fWork" aria-label="Filtrer par jour travaillé"><option value="">Tous les jours</option><option value="0">Travaille le lundi</option><option value="1">Travaille le mardi</option><option value="2">Travaille le mercredi</option><option value="3">Travaille le jeudi</option><option value="4">Travaille le vendredi</option><option value="5">Travaille le samedi</option></select>
       <button class="btn primary" id="btnAdd" type="button"></button>
     </div>
     <div class="filters">
       <div class="chips" role="group" aria-label="Filtrer par statut" id="chips"></div>
       <div class="fgroup"><span class="flabel" id="lEnergy">Énergie</span><div class="seg energy" role="group" aria-labelledby="lEnergy" id="energySeg"></div></div>
     </div>
+    <div id="dayNote"></div>
     <div id="list"></div>
+  </section>
+
+  <section id="tab-feries" class="panel" hidden>
+    <section class="card">
+      <div class="card-h"><h2>Semaine avec jour férié</h2><p>Choisissez le jour férié. La liste montre qui travaille normalement ce jour-là et le besoin de la semaine recalculé avec un jour de moins, pour baisser le plafond de la carte. Semaine de travail du lundi au samedi : un collaborateur travaille tous les jours sauf ses jours de repos.</p></div>
+      <div class="holpick">
+        <div class="holchips" id="holChips" role="group" aria-label="Prochains jours fériés"></div>
+        <div class="field holdate"><label for="holDate">Autre date (fermeture, pont…)</label><input type="date" id="holDate"></div>
+      </div>
+    </section>
+    <div id="holSummary"></div>
+    <div class="toolbar">
+      <div class="chips" id="holSeg" role="group" aria-label="Filtrer la liste"></div>
+      <div class="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="holQ" placeholder="Nom, n° de carte, magasin…" aria-label="Rechercher"></div>
+      <select id="holSite" aria-label="Filtrer par magasin"></select>
+      <button class="btn" id="holCopy" type="button"></button>
+      <button class="btn primary" id="holExport" type="button"></button>
+    </div>
+    <div id="holTable"></div>
   </section>
 
   <section id="tab-sites" class="panel" hidden>
@@ -405,6 +468,7 @@ fieldset legend{font-family:var(--f-display);font-size:1.1rem;font-weight:600;ma
       <div class="step"><span class="k">ÉTAPE 3</span><h3>Besoin par mois</h3><p>Distance mensuelle × consommation du véhicule. En kWh pour un électrique.</p><code>Km / mois × Conso ÷ 100</code><span class="ex">1 489,5 × 11,28 ÷ 100 = 168,0 L</span></div>
       <div class="step"><span class="k">ÉTAPE 4</span><h3>Besoin par semaine</h3><p>Le besoin du mois ramené à une semaine. C'est le « plafond hebdo » de votre fichier Excel.</p><code>Besoin / mois ÷ <span class="semv">4,33</span></code><span class="ex">168,0 ÷ 4,33 = 38,8 L, soit 86 × 4 × 11,28 ÷ 100</span></div>
       <div class="step"><span class="k">ÉTAPE 5</span><h3>Besoin par jour</h3><p>Le besoin de la semaine réparti sur les jours travaillés.</p><code>Besoin / semaine ÷ Jours / semaine</code><span class="ex">38,8 ÷ 4 = 9,7 L</span></div>
+      <div class="step"><span class="k">SEMAINE FÉRIÉE</span><h3>Jour férié travaillé</h3><p>Un collaborateur est concerné si le jour férié n'est pas un de ses jours de repos (semaine du lundi au samedi). Il perd une journée de besoin.</p><code>Besoin / semaine × (Jours − jours fériés travaillés) ÷ Jours</code><span class="ex">38,8 × 3 ÷ 4 = 29,1 L, soit 9,7 L de moins</span></div>
     </div>
     <section class="card">
       <div class="card-h"><h2>Réglages</h2><p>Ils s'appliquent à tous les calculs et à l'export Excel.</p></div>
@@ -451,6 +515,7 @@ const I={
  map:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.5-6-11a6 6 0 1112 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg>',
  arrow:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-5-5l5 5-5 5"/></svg>',
  sort:'<svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 3l4 5H2z"/></svg>',
+ cal:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
  trash:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
 };
 $("btnImport").innerHTML=I.up+"Importer Excel";
@@ -474,19 +539,63 @@ const SEED_ROWS=[
 function seed(){return{example:true,source:"",params:{sem:4.33,prixL:1.75,prixK:0.25},
   vehicles:SEED_VEH.map(([nom,conso,energie])=>({id:uid(),nom,conso,energie})),
   sites:SEED_SITES.map(([nom,tournee])=>({id:uid(),nom,adresse:"",tournee})),
-  rows:SEED_ROWS.map(r=>({id:uid(),...r}))}}
+  rows:SEED_ROWS.map((r,i)=>({id:uid(),carte:String(8801+i),...r}))}}
 let S;
 try{const raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null}catch(e){S=null}
 if(!S||!Array.isArray(S.rows))S=seed();
 let lastImport=null;
 let saveT=null;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
-const UI={sort:{key:"nom",dir:1},metric:"L",period:"mois",chartAll:false,status:"",energy:"",site:"",q:"",qSite:"",tab:"collab"};
+const UI={sort:{key:"nom",dir:1},metric:"L",period:"mois",chartAll:false,status:"",energy:"",workday:"",site:"",q:"",qSite:"",tab:"collab",hol:null};
 
 const vehOf=name=>S.vehicles.find(v=>v.nom===name);
 const siteOf=name=>S.sites.find(s=>s.nom===name);
 const isElec=r=>(vehOf(r.vehicule)?.energie)==="electrique";
 const sem=()=>numOrNull(S.params.sem)||4.33;
+
+/* ---------- jours de repos et jours fériés ---------- */
+const DAY_LABEL=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const DAY_SHORT=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+const normTxt=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const reposCache=new Map();
+function parseRepos(txt){
+  const key=String(txt??"");if(reposCache.has(key))return reposCache.get(key);
+  const t=normTxt(key);let out;
+  if(!t)out={days:[],variable:false,empty:true,bad:[]};
+  else if(/aleatoire|variable|tournant/.test(t))out={days:[],variable:true,empty:false,bad:[]};
+  else{const P=["lun","mar","mer","jeu","ven","sam","dim"],days=new Set(),bad=[];
+    t.split(" ").filter(x=>x&&!["et","ou","le","les","repos"].includes(x)).forEach(x=>{const i=x.length>=3?P.indexOf(x.slice(0,3)):-1;if(i>=0)days.add(i);else bad.push(x)});
+    out={days:[...days].sort((a,b)=>a-b),variable:false,empty:!days.size&&!bad.length,bad}}
+  reposCache.set(key,out);return out;
+}
+function reposShort(r){const p=parseRepos(r.repos);if(p.variable)return "repos variable";if(!p.days.length)return "repos ?";return "repos "+p.days.map(d=>DAY_SHORT[d].toLowerCase()).join(" · ")}
+/* works = travaille ce jour, off = repos (ou dimanche), check = impossible à dire */
+function dayStatus(r,d){
+  const p=parseRepos(r.repos),j=numOrNull(r.jours);
+  if(p.variable)return{s:"check",why:"Planning variable"};
+  if(!p.days.length&&p.bad.length)return{s:"check",why:"Jour de repos illisible"};
+  if(p.days.includes(d)||d===6)return{s:"off"};
+  if(!p.days.length){if(j>=6)return{s:"works"};return{s:"check",why:"Jour de repos non renseigné"}}
+  const cand=6-p.days.filter(x=>x<6).length;
+  if(!j||cand<=j)return{s:"works"};
+  return{s:"check",why:`${plural(cand,"jour possible","jours possibles")} pour ${j} travaillé${j>1?"s":""}`};
+}
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const parseYmd=v=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||"");return m?new Date(+m[1],+m[2]-1,+m[3]):null};
+const addDays=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const dayIdx=d=>(d.getDay()+6)%7;
+const mondayOf=d=>addDays(d,-dayIdx(d));
+const today=()=>{const t=new Date();return new Date(t.getFullYear(),t.getMonth(),t.getDate())};
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114;return new Date(y,Math.floor(n/31)-1,n%31+1)}
+const holCache=new Map();
+function holidaysOf(y){if(!holCache.has(y)){const e=easter(y);holCache.set(y,[[new Date(y,0,1),"Jour de l'an"],[addDays(e,1),"Lundi de Pâques"],[new Date(y,4,1),"Fête du travail"],[new Date(y,4,8),"Victoire 1945"],[addDays(e,39),"Ascension"],[addDays(e,50),"Lundi de Pentecôte"],[new Date(y,6,14),"Fête nationale"],[new Date(y,7,15),"Assomption"],[new Date(y,10,1),"Toussaint"],[new Date(y,10,11),"Armistice"],[new Date(y,11,25),"Noël"]].sort((a,b)=>a[0]-b[0]))}return holCache.get(y)}
+function holidayName(d){const k=ymd(d),h=holidaysOf(d.getFullYear()).find(([x])=>ymd(x)===k);return h?h[1]:null}
+function holidaysFrom(from,n){const y=from.getFullYear();return [y,y+1,y+2].flatMap(holidaysOf).filter(([d])=>d>=from).slice(0,n)}
+const cap=v=>v.charAt(0).toUpperCase()+v.slice(1);
+const fmtD=(d,o)=>new Intl.DateTimeFormat("fr-FR",o).format(d);
+const shortDate=d=>cap(fmtD(d,{weekday:"short",day:"numeric",month:"short"}))+(d.getFullYear()!==today().getFullYear()?" "+d.getFullYear():"");
+const longDate=d=>fmtD(d,{weekday:"long",day:"numeric",month:"long"});
+function weekTitle(mon){const sun=addDays(mon,6),sm=mon.getMonth()===sun.getMonth(),sy=mon.getFullYear()===sun.getFullYear();return `du lundi ${mon.getDate()}${sm?"":" "+fmtD(mon,{month:"long"})}${sy?"":" "+mon.getFullYear()} au dimanche ${sun.getDate()} ${fmtD(sun,{month:"long"})} ${sun.getFullYear()}`}
 
 function calc(r){
   const s=sem();
@@ -512,15 +621,16 @@ function mapsUrl(r){
 }
 
 /* ---------- filtres ---------- */
-function rowsFor({ignoreSite=false,ignoreStatus=false,ignoreEnergy=false}={}){
+function rowsFor({ignoreSite=false,ignoreStatus=false,ignoreEnergy=false,ignoreWorkday=false}={}){
   const q=UI.q.trim().toLowerCase();
   return S.rows.filter(r=>{
     if(!ignoreSite&&UI.site&&r.site!==UI.site)return false;
-    if(q){const hay=[r.nom,r.prenom,r.matricule,r.ville,r.cp,r.metier,r.site,r.vehicule,r.immat].join(" ").toLowerCase();if(!hay.includes(q))return false}
+    if(q){const hay=[r.nom,r.prenom,r.matricule,r.carte,r.ville,r.cp,r.metier,r.site,r.vehicule,r.immat].join(" ").toLowerCase();if(!hay.includes(q))return false}
     if(!ignoreStatus&&UI.status){const c=calc(r);
       if(UI.status==="ok"&&c.missing.length)return false;
       if(UI.status==="missing"&&!c.missing.length)return false}
     if(!ignoreEnergy&&UI.energy&&(UI.energy==="electrique")!==isElec(r))return false;
+    if(!ignoreWorkday&&UI.workday!==""&&dayStatus(r,+UI.workday).s!=="works")return false;
     return true;
   });
 }
@@ -534,6 +644,7 @@ function sorted(list){
 function renderScope(){
   const parts=[];
   if(UI.site)parts.push("<b>"+esc(UI.site)+"</b>");
+  if(UI.workday!=="")parts.push("travaillent le <b>"+DAY_LABEL[+UI.workday].toLowerCase()+"</b>");
   if(UI.energy)parts.push("<b>"+(UI.energy==="electrique"?"électricité":"carburant")+"</b>");
   if(UI.status)parts.push("<b>"+({ok:"fiches complètes",missing:"fiches à compléter"}[UI.status])+"</b>");
   if(UI.q.trim())parts.push("recherche « <b>"+esc(UI.q.trim())+"</b> »");
@@ -541,7 +652,7 @@ function renderScope(){
   $("scope").innerHTML=parts.length?`Sélection : ${parts.join(" · ")} <button type="button" id="clearF">Tout afficher</button>`:`${src} · tous les collaborateurs`;
   const b=$("clearF");if(b)b.onclick=clearFilters;
 }
-function clearFilters(){UI.site="";UI.status="";UI.energy="";UI.q="";$("q").value="";render()}
+function clearFilters(){UI.site="";UI.status="";UI.energy="";UI.workday="";UI.q="";$("q").value="";$("fWork").value="";render()}
 function setEnergy(v){UI.energy=v;if(v==="electrique"&&UI.metric==="L")UI.metric="K";if(v==="thermique"&&UI.metric==="K")UI.metric="L";render()}
 function renderKpis(){
   const list=rowsFor();
@@ -636,7 +747,7 @@ function renderList(){
      <td><div class="who clip">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub clip">${esc(r.metier||"—")}${r.ville?" · "+esc(r.ville):""}</div></td>
      <td><div class="clip" title="${esc(r.site)}">${esc(r.site||"—")}</div><div class="sub clip">${esc(r.vehicule||"Sans véhicule")}${c.elec?'<span class="tag">ÉLEC</span>':""}</div></td>
      <td class="n">${c.d==null&&c.t==null?'<span class="miss">—</span>':`<div>${fmt(c.kmJour,1)}<span class="unit">km</span></div><div class="sub">${c.d==null?'<span class="miss">?</span>':fmt(c.d,1)} × 2 + ${c.t==null?'<span class="miss">?</span>':fmt0(c.t)}</div>`}</td>
-     <td class="n">${c.j?c.j+'<span class="unit">j</span>':'<span class="miss">—</span>'}</td>
+     <td class="n">${c.j?c.j+'<span class="unit">j</span>':'<span class="miss">—</span>'}<div class="sub">${esc(reposShort(r))}</div></td>
      <td class="n">${fmt0(c.kmMois)}<span class="unit">km</span></td>
      <td class="n"><span class="big">${fmt(c.besoin,1)}</span><span class="unit">${u}</span><div class="mbar${c.elec?" v":""}"><i style="width:${mx?c.besoin/mx*100:0}%"></i></div></td>
      <td class="n"><span class="big">${fmt(c.hebdo,1)}</span><span class="unit">${u}</span></td>
@@ -657,6 +768,15 @@ function renderSiteSelect(){
   $("fSite").innerHTML=`<option value="">Tous les magasins</option>`+names.map(n=>`<option${n===UI.site?" selected":""}>${esc(n)}</option>`).join("");
 }
 $("fSite").addEventListener("change",e=>{UI.site=e.target.value;render()});
+$("fWork").addEventListener("change",e=>{UI.workday=e.target.value;render()});
+function renderDayNote(){
+  const el=$("dayNote");if(UI.workday===""){el.innerHTML="";return}
+  const d=+UI.workday;let w=0,chk=0;
+  rowsFor({ignoreWorkday:true}).forEach(r=>{const st=dayStatus(r,d).s;if(st==="works")w++;else if(st==="check")chk++});
+  const nh=holidaysFrom(today(),30).find(([x])=>dayIdx(x)===d);
+  el.innerHTML=`<div class="daynote">${I.cal}<span><b>${plural(w,"collaborateur")} ${w>1?"travaillent":"travaille"} le ${DAY_LABEL[d].toLowerCase()}</b>${chk?` · ${plural(chk,"autre")} au planning variable ou incomplet ${chk>1?"ne sont pas inclus":"n'est pas inclus"}`:""}</span>${nh?`<button class="btn small" type="button" id="dayHol">${cap(longDate(nh[0]))} férié : préparer la semaine ${I.arrow}</button>`:""}</div>`;
+  const b=$("dayHol");if(b)b.onclick=()=>{holInit();UI.hol.date=ymd(nh[0]);UI.hol.off={};UI.hol.view="works";selectTab("feries")};
+}
 $("q").addEventListener("input",e=>{UI.q=e.target.value;render()});
 
 /* ---------- rendu : référentiels ---------- */
@@ -727,12 +847,110 @@ function renderReset(){
   else $("rArm").onclick=()=>{resetArmed=true;renderReset()};
 }
 
+/* ---------- semaines avec jour férié ---------- */
+$("holCopy").innerHTML=I.copy+"Copier";
+$("holExport").innerHTML=I.down+"Exporter la liste";
+function holidayCalc(r,offIdx){
+  const c=calc(r);let lost=0,maybe=0,why=null;
+  offIdx.forEach(d=>{const st=dayStatus(r,d);if(st.s==="works")lost++;else if(st.s==="check"){maybe++;why=why||st.why}});
+  const j=c.j||0,per=c.c!=null?c.kmJour*c.c/100:0;
+  const newJ=Math.max(0,j-lost),ifJ=Math.max(0,j-lost-maybe),newW=per*newJ,ifW=per*ifJ;
+  return{c,lost,maybe,why,newJ,newW,ifJ,ifW,baisse:c.hebdo-newW,ifBaisse:c.hebdo-ifW,status:maybe?"check":(lost?"works":"off")};
+}
+function holInit(){if(UI.hol)return;const up=holidaysFrom(today(),12);const first=up.find(([d])=>dayIdx(d)!==6)||up[0];UI.hol={date:ymd(first[0]),off:{},view:"works",q:"",site:""}}
+function holContext(){
+  holInit();const H=UI.hol,date=parseYmd(H.date)||today(),mon=mondayOf(date);
+  const days=[];for(let i=0;i<7;i++){const d=addDays(mon,i),k=ymd(d),name=holidayName(d);if(name||k===H.date)days.push({d,k,i,name:name||"Jour non travaillé"})}
+  const offDays=days.filter(x=>x.i<6&&H.off[x.k]!==false),offIdx=offDays.map(x=>x.i);
+  const q=H.q.trim().toLowerCase();
+  const rows=S.rows.filter(r=>(!H.site||r.site===H.site)&&(!q||[r.nom,r.prenom,r.matricule,r.carte,r.immat,r.site,r.vehicule,r.ville].join(" ").toLowerCase().includes(q))).map(r=>({r,h:holidayCalc(r,offIdx)}));
+  const G={works:[],check:[],off:[]};rows.forEach(x=>G[x.h.status].push(x));
+  const srt=(a,b)=>(a.r.site||"~").localeCompare(b.r.site||"~","fr")||(a.r.nom+" "+a.r.prenom).localeCompare(b.r.nom+" "+b.r.prenom,"fr");
+  Object.values(G).forEach(l=>l.sort(srt));
+  return{H,date,mon,days,offDays,offIdx,rows,G};
+}
+function renderHol(){
+  const X=holContext(),H=X.H;
+  $("holChips").innerHTML=holidaysFrom(mondayOf(today()),10).map(([d,l])=>{const sun=dayIdx(d)===6;return `<button type="button" class="holchip${sun?" sun":""}" data-date="${ymd(d)}" aria-pressed="${ymd(d)===H.date}"><b>${shortDate(d)}</b><span>${esc(l)}${sun?" · dimanche":""}</span></button>`}).join("");
+  if(document.activeElement!==$("holDate"))$("holDate").value=H.date;
+  const sites=[...new Set(S.rows.map(r=>r.site).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"fr"));
+  if(document.activeElement!==$("holSite"))$("holSite").innerHTML=`<option value="">Tous les magasins</option>`+sites.map(n=>`<option${n===H.site?" selected":""}>${esc(n)}</option>`).join("");
+  let fN=0,fW=0,kN=0,kW=0;X.rows.forEach(({h})=>{if(h.c.elec){kN+=h.c.hebdo;kW+=h.newW}else{fN+=h.c.hebdo;fW+=h.newW}});
+  const one=X.offDays.length===1?X.offDays[0]:null;
+  $("holSummary").innerHTML=`<section class="card holweek">
+   <div class="card-h"><h2>Semaine ${weekTitle(X.mon)}</h2>
+    <div class="holdays">${X.days.map(x=>x.i===6?`<span class="dayt off">${shortDate(x.d)} · ${esc(x.name)} · dimanche, non travaillé</span>`:`<button type="button" class="dayt" data-k="${x.k}" aria-pressed="${H.off[x.k]!==false}" title="${H.off[x.k]!==false?"Compté comme non travaillé. Cliquez si ce jour est finalement travaillé.":"Compté comme travaillé. Cliquez pour le compter comme non travaillé."}">${H.off[x.k]!==false?I.check:I.close}${shortDate(x.d)} · ${esc(x.name)}</button>`).join("")}</div>
+    <p>${X.offDays.length?`Les collaborateurs qui travaillent normalement ${one?"le "+longDate(one.d):"l'un de ces jours"} ont ${one?"un jour":"des jours"} de moins cette semaine : leur besoin hebdomadaire baisse d'autant.`:"Aucun jour non travaillé du lundi au samedi cette semaine : pas de baisse."}</p></div>
+   <div class="holkpis">
+    <div class="hk"><small>Cartes à baisser</small><b>${X.G.works.length}</b><em>${one?"travaillent le "+longDate(one.d):"travaillent un jour non travaillé"}</em></div>
+    <div class="hk fuel"><small>Carburant de la semaine</small><b>${fmt0(fN)}<span class="arrow">→</span>${fmt0(fW)}<span>L</span></b><em>baisse de <strong>${fmt0(fN-fW)} L</strong></em></div>
+    <div class="hk volt"><small>Électricité de la semaine</small><b>${fmt0(kN)}<span class="arrow">→</span>${fmt0(kW)}<span>kWh</span></b><em>baisse de <strong>${fmt0(kN-kW)} kWh</strong></em></div>
+    <div class="hk warn"><small>À vérifier</small><b>${X.G.check.length}</b><em>planning variable ou incomplet</em></div>
+   </div></section>`;
+  $("holSeg").innerHTML=[["works","À baisser",X.G.works.length,"var(--fuel-bar)"],["check","À vérifier",X.G.check.length,"var(--warn)"],["off","Pas de changement",X.G.off.length,"var(--faint)"]].map(([v,l,n,col])=>`<button class="chip" type="button" data-v="${v}" aria-pressed="${H.view===v}"><span class="dot" style="background:${col}"></span>${l} <span class="n">${n}</span></button>`).join("");
+  const list=X.G[H.view],chk=H.view==="check";
+  if(!list.length){$("holTable").innerHTML=`<div class="tablebox"><div class="empty"><b>${{works:"Aucune carte à baisser.",check:"Aucun planning à vérifier.",off:"Tous les collaborateurs sont concernés."}[H.view]}</b><span>${H.view==="works"&&!X.offDays.length?"Cochez au moins un jour non travaillé.":"Changez de jour ou de filtre."}</span></div></div>`;return}
+  const T={fN:0,fW:0,fB:0,kN:0,kW:0,kB:0};
+  const body=list.map(({r,h})=>{const u=h.c.elec?"kWh":"L",w=chk?h.ifW:h.newW,b=chk?h.ifBaisse:h.baisse,nj=chk?h.ifJ:h.newJ;
+    if(h.c.elec){T.kN+=h.c.hebdo;T.kW+=w;T.kB+=b}else{T.fN+=h.c.hebdo;T.fW+=w;T.fB+=b}
+    return `<tr class="row" data-id="${r.id}" tabindex="0">
+     <td><div class="who clip">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub clip">${esc([r.matricule,r.metier].filter(Boolean).join(" · ")||"—")}</div>${h.why?`<div class="why">${I.alert}${esc(h.why)}</div>`:""}${h.c.missing.length?`<div class="why">${I.alert}Calcul incomplet</div>`:""}</td>
+     <td>${r.carte?esc(r.carte):'<span class="sub">—</span>'}</td>
+     <td><div class="clip">${esc(r.site||"—")}</div><div class="sub clip">${esc(r.vehicule||"Sans véhicule")}${r.immat?" · "+esc(r.immat):""}</div></td>
+     <td><span class="sub">${esc(reposShort(r))}</span></td>
+     <td class="n">${h.c.j?`${h.c.j}<span class="arrow">→</span><b>${nj}</b>`:'<span class="miss">—</span>'}</td>
+     <td class="n">${fmt(h.c.hebdo,1)}<span class="unit">${u}</span></td>
+     <td class="n"><span class="big">${fmt(w,1)}</span><span class="unit">${u}</span>${chk?`<div class="sub">s'il travaille</div>`:""}</td>
+     <td class="n">${b>0.05?`<b>−${fmt(b,1)}</b><span class="unit">${u}</span>`:'<span class="sub">—</span>'}</td></tr>`}).join("");
+  const tot=(l,k)=>(l||!k?`${fmt0(l)}<span class="unit">L</span>`:"")+(k?`<div${l?' class="sub"':""}>${l?"+ ":""}${fmt0(k)}<span class="unit">kWh</span></div>`:"");
+  const th=(l,n)=>`<th${n?' class="n"':""} style="padding:11px 10px${n?";text-align:right":""}">${l}</th>`;
+  $("holTable").innerHTML=`<div class="tablebox"><table><thead><tr>${th("Collaborateur")}${th("N° carte")}${th("Magasin · véhicule")}${th("Repos")}${th("Jours",1)}${th("Semaine normale",1)}${th("Semaine fériée",1)}${th("Baisse",1)}</tr></thead>
+   <tbody>${body}</tbody><tfoot><tr><td colspan="5">Total · ${plural(list.length,"collaborateur")}</td><td class="n">${tot(T.fN,T.kN)}</td><td class="n">${tot(T.fW,T.kW)}</td><td class="n">${tot(T.fB,T.kB)}</td></tr></tfoot></table></div>`;
+}
+$("holChips").addEventListener("click",e=>{const b=e.target.closest(".holchip");if(!b)return;holInit();UI.hol.date=b.dataset.date;UI.hol.off={};renderHol()});
+$("holDate").addEventListener("change",e=>{if(!parseYmd(e.target.value))return;holInit();UI.hol.date=e.target.value;UI.hol.off={};renderHol()});
+$("holSummary").addEventListener("click",e=>{const b=e.target.closest(".dayt[data-k]");if(!b)return;const k=b.dataset.k;if(UI.hol.off[k]===false)delete UI.hol.off[k];else UI.hol.off[k]=false;renderHol()});
+$("holSeg").addEventListener("click",e=>{const b=e.target.closest(".chip[data-v]");if(!b)return;UI.hol.view=b.dataset.v;renderHol()});
+$("holQ").addEventListener("input",e=>{holInit();UI.hol.q=e.target.value;renderHol()});
+$("holSite").addEventListener("change",e=>{holInit();UI.hol.site=e.target.value;renderHol()});
+function openHolRow(tr){const r=S.rows.find(x=>x.id===tr.dataset.id);if(!r)return;const X=holContext();openDrawer(r,{nav:X.G[X.H.view].map(x=>x.r.id)})}
+$("holTable").addEventListener("click",e=>{const tr=e.target.closest("tr.row");if(tr)openHolRow(tr)});
+$("holTable").addEventListener("keydown",e=>{if(e.key!=="Enter")return;const tr=e.target.closest("tr.row");if(tr)openHolRow(tr)});
+const HCOLS=["Statut","Nom","Prénom","Matricule","N° Carte","Immatriculation","Magasin","Type Véhicule","Énergie","Jour de repos","Jours travaillés semaine normale","Jours travaillés semaine fériée","Besoin semaine normale","Besoin semaine fériée","Baisse","Unité","Remarque"];
+function holLines(){
+  const X=holContext(),rows=[...X.G.works,...X.G.check];
+  return{X,lines:rows.map(({r,h})=>{const chk=h.status==="check";return[chk?"À vérifier":"À baisser",r.nom,r.prenom,r.matricule,r.carte||"",r.immat,r.site,r.vehicule,h.c.elec?"Électrique":"Thermique",r.repos,h.c.j??"",h.c.j?(chk?h.ifJ:h.newJ):"",+h.c.hebdo.toFixed(1),+(chk?h.ifW:h.newW).toFixed(1),+(chk?h.ifBaisse:h.baisse).toFixed(1),h.c.elec?"kWh":"L",[chk?h.why+" : à confirmer (valeurs si le collaborateur travaille ce jour)":"",h.c.missing.length?"Calcul incomplet":""].filter(Boolean).join(" · ")]})};
+}
+async function saveWorkbook(wb,name,okMsg){
+  if(!inArtifact){try{XLSX.writeFile(wb,name);toast(okMsg)}catch(err){toast("L'export n'a pas abouti.")}return}
+  if(!downloads){toast("L'export de fichier n'est pas disponible ici. Utilisez « Copier » puis collez dans Excel.");return}
+  try{await downloads.save({filename:name,data:XLSX.write(wb,{bookType:"xlsx",type:"array"})});toast(okMsg)}
+  catch(err){const code=err&&err.code;if(code==="declined")return;if(code==="rate_limited"){toast("Un enregistrement est déjà en cours, réessayez dans un instant.");return}toast("L'export n'a pas abouti. Utilisez « Copier » puis collez dans Excel.")}
+}
+async function copyText(text,n){
+  try{await navigator.clipboard.writeText(text);toast(`${plural(n,"ligne")} copiée${n>1?"s":""} · collez dans Excel avec Ctrl+V.`)}
+  catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();toast(ok?`${plural(n,"ligne")} copiée${n>1?"s":""}.`:"La copie a été refusée par le navigateur.")}
+}
+$("holExport").onclick=async()=>{
+  if(typeof XLSX==="undefined"){toast("La génération Excel n'a pas pu se charger. Utilisez « Copier ».");return}
+  const {X,lines}=holLines();if(!lines.length){toast("Aucune carte à baisser pour cette semaine.");return}
+  const ws=XLSX.utils.aoa_to_sheet([HCOLS,...lines]);
+  ws["!cols"]=[12,16,14,11,11,13,30,26,11,16,12,12,12,12,10,7,44].map(w=>({wch:w}));
+  ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:lines.length,c:HCOLS.length-1}})};
+  let fN=0,fW=0,kN=0,kW=0;X.rows.forEach(({h})=>{if(h.c.elec){kN+=h.c.hebdo;kW+=h.newW}else{fN+=h.c.hebdo;fW+=h.newW}});
+  const sum=XLSX.utils.aoa_to_sheet([["Semaine",weekTitle(X.mon)],["Jour(s) non travaillé(s)",X.offDays.map(x=>longDate(x.d)+" ("+x.name+")").join(", ")||"aucun"],["Cartes à baisser",X.G.works.length],["À vérifier",X.G.check.length],["Carburant semaine normale (L)",+fN.toFixed(1)],["Carburant semaine fériée (L)",+fW.toFixed(1)],["Baisse carburant (L)",+(fN-fW).toFixed(1)],["Électricité semaine normale (kWh)",+kN.toFixed(1)],["Électricité semaine fériée (kWh)",+kW.toFixed(1)],["Baisse électricité (kWh)",+(kN-kW).toFixed(1)]]);
+  sum["!cols"]=[{wch:34},{wch:64}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Cartes à baisser");XLSX.utils.book_append_sheet(wb,sum,"Résumé");
+  await saveWorkbook(wb,`cartes_semaine_${ymd(X.mon)}.xlsx`,`Liste exportée · ${plural(lines.length,"collaborateur")}.`);
+};
+$("holCopy").onclick=()=>{const {lines}=holLines();if(!lines.length){toast("Aucune carte à baisser pour cette semaine.");return}copyText([HCOLS,...lines].map(l=>l.map(v=>typeof v==="number"?String(v).replace(".",","):String(v??"").replace(/[\t\n]/g," ")).join("\t")).join("\n"),lines.length)};
+
 /* ---------- onglets ---------- */
 function selectTab(t){
   UI.tab=t;
   document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===t?"true":"false"));
   document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
-  if(t==="veh")renderVeh();if(t==="sites")renderSites();if(t==="methode"){renderParams();renderReset()}
+  if(t==="veh")renderVeh();if(t==="sites")renderSites();if(t==="methode"){renderParams();renderReset()}if(t==="feries")renderHol();
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>selectTab(b.dataset.tab));
 
@@ -786,8 +1004,9 @@ function openDrawer(row,{isNew=false,nav=null,completion=false}={}){
     </fieldset>
     <fieldset><legend>Activité et véhicule</legend>
      <div class="field full" id="f_e_jours"><span class="lab" id="lJours">Jours travaillés par semaine</span><div class="seg days" role="group" aria-labelledby="lJours" id="e_jours" tabindex="-1">${[1,2,3,4,5,6,7].map(n=>`<button type="button" data-j="${n}" aria-pressed="${numOrNull(row.jours)===n}">${n}</button>`).join("")}</div></div>
+     <div class="field full" id="f_e_repos"><span class="lab" id="lRepos">Jours de repos</span><div class="seg days" role="group" aria-labelledby="lRepos" id="e_repos">${DAY_SHORT.slice(0,6).map((l,i)=>`<button type="button" data-r="${i}" aria-pressed="false">${l}</button>`).join("")}</div><label class="check"><input type="checkbox" id="e_reposVar"> Planning variable (repos aléatoire)</label><div class="hint" id="reposHint"></div></div>
      ${field("e_tournee","Tournée par jour",`<div class="unitbox"><input id="e_tournee" data-k="tournee" inputmode="decimal" value="${row.tournee==null?"":String(row.tournee).replace(".",",")}" placeholder="0"><span>km</span></div><span class="hint">Repris du magasin, modifiable</span>`)}
-     ${field("e_repos","Jour(s) de repos",`<input id="e_repos" data-k="repos" value="${esc(row.repos)}" placeholder="ex. Lundi/Mardi">`)}
+     ${field("e_carte","N° de carte carburant",`<input id="e_carte" data-k="carte" value="${esc(row.carte)}" autocomplete="off">`)}
      ${field("e_vehicule","Type de véhicule",`<select id="e_vehicule" data-k="vehicule">${vehOpts}</select>`,"full")}
      ${field("e_conso","Consommation",`<div class="unitbox"><input id="e_conso" data-k="conso" inputmode="decimal" value="${row.conso==null?"":String(row.conso).replace(".",",")}"><span id="consoUnit">L / 100 km</span></div><span class="hint">Reprise du véhicule, modifiable</span>`)}
      ${field("e_immat","Immatriculation",`<input id="e_immat" data-k="immat" value="${esc(row.immat)}" autocomplete="off">`)}
@@ -807,6 +1026,8 @@ function openDrawer(row,{isNew=false,nav=null,completion=false}={}){
   const p=$("dPrev"),n=$("dNext");if(p)p.onclick=()=>navTo(-1);if(n)n.onclick=()=>navTo(1);
   const body=$("dBody");body.addEventListener("input",onField);body.addEventListener("change",onField);
   $("e_jours").addEventListener("click",e=>{const b=e.target.closest("button[data-j]");if(!b)return;D.row.jours=+b.dataset.j;$("e_jours").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));afterChange()});
+  $("e_repos").addEventListener("click",e=>{const b=e.target.closest("button[data-r]");if(!b||b.getAttribute("aria-disabled")==="true")return;const set=new Set(parseRepos(D.row.repos).days);const d=+b.dataset.r;set.has(d)?set.delete(d):set.add(d);D.row.repos=[...set].sort((a,b2)=>a-b2).map(x=>DAY_LABEL[x]).join("/");afterChange()});
+  $("e_reposVar").addEventListener("change",e=>{D.row.repos=e.target.checked?"Aléatoire":"";afterChange()});
   if(!wasOpen)document.addEventListener("keydown",drawerKeys);
   setTimeout(()=>{if(isNew)$("e_nom").focus();else if(completion){const c=calc(row);if(c.missing.length)focusField(c.missing[0][0]);else $("dClose").focus()}else $("dClose").focus()},40);
 }
@@ -839,6 +1060,24 @@ function renderDrawerCalc(){
   const a=$("mapsLink"),u2=mapsUrl(r);
   if(a){if(u2){a.href=u2;a.removeAttribute("aria-disabled");$("mapsHint").textContent="Ouvre l'itinéraire en voiture ; reportez ensuite les km ci-dessus."}
    else{a.removeAttribute("href");a.setAttribute("aria-disabled","true");$("mapsHint").textContent="Renseignez l'adresse (ou au moins le code postal et la ville) et le magasin."}}
+  renderRepos();
+}
+function renderRepos(){
+  const seg=$("e_repos");if(!seg||!D)return;
+  const r=D.row,p=parseRepos(r.repos),j=numOrNull(r.jours);
+  seg.querySelectorAll("button").forEach(b=>{b.setAttribute("aria-pressed",p.days.includes(+b.dataset.r)?"true":"false");b.setAttribute("aria-disabled",p.variable?"true":"false")});
+  $("e_reposVar").checked=p.variable;
+  const h=$("reposHint");
+  if(p.variable){h.innerHTML="Planning variable : ce collaborateur sera « à vérifier » pour les semaines avec jour férié.";return}
+  const pre=p.bad.length?`<span class="warnt">Valeur importée illisible : « ${esc(r.repos)} ». </span>`:"";
+  if(!p.days.length){h.innerHTML=pre+"Indiquez le ou les jours de repos (semaine du lundi au samedi).";return}
+  const work=[0,1,2,3,4,5].filter(d=>!p.days.includes(d));
+  const txt=pre+`Travaille : ${work.map(d=>DAY_SHORT[d].toLowerCase()).join(", ")||"aucun jour"}.`;
+  if(!j){h.innerHTML=txt+` <button type="button" class="linkbtn" id="deduceJ">Mettre ${plural(work.length,"jour travaillé","jours travaillés")}</button>`;
+    $("deduceJ").onclick=()=>{D.row.jours=work.length;$("e_jours").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",+x.dataset.j===work.length?"true":"false"));afterChange()};return}
+  if(work.length===j)h.innerHTML=txt+` Cohérent avec ${plural(j,"jour travaillé","jours travaillés")}.`;
+  else if(work.length>j)h.innerHTML=txt+` <span class="warnt">${plural(work.length,"jour possible","jours possibles")} pour ${j} travaillé${j>1?"s":""} : ajoutez le jour de repos manquant.</span>`;
+  else h.innerHTML=txt+` <span class="warnt">Seulement ${plural(work.length,"jour possible","jours possibles")} pour ${j} travaillé${j>1?"s":""}.</span>`;
 }
 function renderDrawerFoot(){
   const f=$("dFoot");
@@ -868,15 +1107,15 @@ function onField(e){
 let rT=null;
 function afterChange(){renderDrawerHead();renderDrawerCalc();if(!D.isNew){save();clearTimeout(rT);rT=setTimeout(render,120)}}
 function startCompletion(){
-  UI.status="missing";UI.energy="";UI.site="";UI.q="";$("q").value="";selectTab("collab");render();
+  UI.status="missing";UI.energy="";UI.workday="";UI.site="";UI.q="";$("q").value="";$("fWork").value="";selectTab("collab");render();
   const nav=sorted(rowsFor()).map(r=>r.id);if(!nav.length)return;
   const r=S.rows.find(x=>x.id===nav[0]);openDrawer(r,{nav,completion:true});
 }
-$("btnAdd").onclick=()=>{const s=siteOf(UI.site);openDrawer({id:uid(),nom:"",prenom:"",matricule:"",metier:"Livreur",adresse:"",cp:"",ville:"",site:UI.site||"",vehicule:"",immat:"",distance:null,jours:5,tournee:s?s.tournee:null,conso:null,repos:""},{isNew:true})};
+$("btnAdd").onclick=()=>{const s=siteOf(UI.site);openDrawer({id:uid(),nom:"",prenom:"",matricule:"",metier:"Livreur",adresse:"",cp:"",ville:"",site:UI.site||"",vehicule:"",immat:"",carte:"",distance:null,jours:5,tournee:s?s.tournee:null,conso:null,repos:""},{isNew:true})};
 
 /* ---------- import Excel ---------- */
 const norm=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-const H={nom:["nom"],prenom:["prenom"],matricule:["matricule"],metier:["metier","fonction"],site:["affectation","magasin","site"],vehicule:["type vehicule"],immat:["vehicule","immatriculation"],a1:["adresse ligne 1","adresse"],a2:["adresse ligne 2"],a3:["adresse ligne 3"],cp:["cp","code postal"],ville:["ville"],distance:["distance domicile magasin"],jours:["jours travailles hebdo"],conso:["conso moyenne vehicule"],tournee:["distance parcourue par jour en fonction du site","tournee km jour"],repos:["jour de repos"],energie:["energie"]};
+const H={nom:["nom"],prenom:["prenom"],matricule:["matricule"],metier:["metier","fonction"],site:["affectation","magasin","site"],vehicule:["type vehicule"],immat:["vehicule","immatriculation"],a1:["adresse ligne 1","adresse"],a2:["adresse ligne 2"],a3:["adresse ligne 3"],cp:["cp","code postal"],ville:["ville"],distance:["distance domicile magasin"],jours:["jours travailles hebdo"],conso:["conso moyenne vehicule"],tournee:["distance parcourue par jour en fonction du site","tournee km jour"],repos:["jour de repos"],energie:["energie"],carte:["n carte","no carte","numero carte","numero de carte","carte carburant"]};
 const isElecName=n=>/(^|\s)E-|ELECTR|ÉLECTR|\bZOE\b|E-TECH/i.test(n||"");
 function mode(arr){const m=new Map();arr.forEach(v=>m.set(v,(m.get(v)||0)+1));let best=null,bc=0;m.forEach((c,v)=>{if(c>bc){bc=c;best=v}});return best}
 $("btnImport").onclick=()=>$("fileInput").click();
@@ -913,7 +1152,7 @@ async function handleFile(f){
         adresse:[get(row,"a1"),get(row,"a2"),get(row,"a3")].map(str).filter(Boolean).join(", "),
         cp:cpRaw==null?"":(typeof cpRaw==="number"?String(cpRaw).padStart(5,"0"):String(cpRaw).trim()),ville:str(get(row,"ville")),
         site,vehicule:veh,immat:str(get(row,"immat")),distance:numOrNull(get(row,"distance")),jours:numOrNull(get(row,"jours")),
-        tournee:tour,conso:conso!=null?conso:(veh&&vehMap.get(veh)?vehMap.get(veh).conso:null),repos:str(get(row,"repos"))});
+        tournee:tour,conso:conso!=null?conso:(veh&&vehMap.get(veh)?vehMap.get(veh).conso:null),repos:str(get(row,"repos")),carte:str(get(row,"carte"))});
     }
     if(!rows.length){showErr("Aucune ligne collaborateur n'a été trouvée sous la ligne d'en-tête.");return}
     const prev=JSON.parse(JSON.stringify(S));
@@ -922,7 +1161,7 @@ async function handleFile(f){
     sites.sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
     S={...S,example:false,source:f.name,rows,vehicles:[...vehMap.values()].sort((a,b)=>a.nom.localeCompare(b.nom,"fr")),sites};
     lastImport={prev,file:f.name,rows:rows.length,miss:rows.filter(r=>calc(r).missing.length).length,newVeh:vehMap.size-vehBefore,newSites};
-    UI.site="";UI.q="";UI.status="";UI.energy="";$("q").value="";
+    UI.site="";UI.q="";UI.status="";UI.energy="";UI.workday="";$("q").value="";$("fWork").value="";
     save();selectTab("collab");renderAll();
     window.scrollTo({top:0,behavior:"smooth"});
   }catch(err){showErr("Le fichier n'a pas pu être lu ("+(err&&err.message||err)+"). Enregistrez-le au format .xlsx puis réessayez.")}
@@ -934,7 +1173,7 @@ window.addEventListener("dragleave",e=>{if(!hasFiles(e))return;dragDepth=Math.ma
 window.addEventListener("drop",e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth=0;$("drop").hidden=true;const f=e.dataTransfer.files[0];if(f)handleFile(f)});
 
 /* ---------- export ---------- */
-const COLS=["Nom","Prénom","Matricule","Métier","Adresse","CP","Ville","Affectation","Type Véhicule","Véhicule","Énergie","Distance Domicile-Magasin","Jours travaillés hebdo","Conso moyenne Véhicule","Distance parcourue par Jour en fonction du site","Distance Total / Mois","Besoin Carburant  en litres / mois","Unité","Besoin / semaine (Plafond Hebdo)","Ratio litres / Jour","Jour de repos"];
+const COLS=["Nom","Prénom","Matricule","Métier","Adresse","CP","Ville","Affectation","Type Véhicule","Véhicule","Énergie","Distance Domicile-Magasin","Jours travaillés hebdo","Conso moyenne Véhicule","Distance parcourue par Jour en fonction du site","Distance Total / Mois","Besoin Carburant  en litres / mois","Unité","Besoin / semaine (Plafond Hebdo)","Ratio litres / Jour","Jour de repos","N° Carte"];
 function exportRows(){return sorted(rowsFor()).map(r=>({r,c:calc(r)}))}
 function buildWorkbook(){
   const list=exportRows();const s=sem();
@@ -950,7 +1189,7 @@ function buildWorkbook(){
     put(17,c.elec?"kWh":"L");
     ws[enc({r:R,c:18})]={t:"n",v:c.hebdo,f:`Q${n}/${s}`,z:"0.0"};
     ws[enc({r:R,c:19})]=c.ratio!=null?{t:"n",v:c.ratio,f:`IFERROR(S${n}/M${n},"")`,z:"0.0"}:{t:"s",v:"",f:`IFERROR(S${n}/M${n},"")`};
-    put(20,r.repos);
+    put(20,r.repos);put(21,r.carte);
   });
   const ref=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}});
   ws["!ref"]=ref;ws["!autofilter"]={ref};
@@ -968,7 +1207,7 @@ function buildWorkbook(){
 const inArtifact=!!(window.claude&&window.claude.use);
 let downloads=null;
 (async()=>{if(!inArtifact)return;try{downloads=await window.claude.use("downloads")}catch(e){downloads=null}
-  if(!downloads){const b=$("btnExport");b.disabled=true;b.title="L'export de fichier n'est pas disponible ici : utilisez « Copier » puis collez dans Excel."}})();
+  if(!downloads){["btnExport","holExport"].forEach(id=>{const b=$(id);b.disabled=true;b.title="L'export de fichier n'est pas disponible ici : utilisez « Copier » puis collez dans Excel."})}})();
 $("btnExport").onclick=async()=>{
   if(typeof XLSX==="undefined"){toast("La génération Excel n'a pas pu se charger. Utilisez « Copier ».");return}
   const d=new Date();const name=`besoin_carburant${UI.energy==="electrique"?"_electricite":UI.energy==="thermique"?"_carburant":""}_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.xlsx`;
@@ -980,7 +1219,7 @@ $("btnExport").onclick=async()=>{
 };
 $("btnCopy").onclick=async()=>{
   const list=exportRows();
-  const lines=[COLS.join("\t")].concat(list.map(({r,c})=>[r.nom,r.prenom,r.matricule,r.metier,r.adresse,r.cp,r.ville,r.site,r.vehicule,r.immat,c.elec?"Électrique":"Thermique",c.d??"",c.j??"",c.c??"",c.t??"",fmt(c.kmMois,1),fmt(c.besoin,2),c.elec?"kWh":"L",fmt(c.hebdo,2),c.ratio!=null?fmt(c.ratio,2):"",r.repos].map(v=>typeof v==="number"?String(v).replace(".",","):String(v??"").replace(/[\t\n]/g," ")).join("\t")));
+  const lines=[COLS.join("\t")].concat(list.map(({r,c})=>[r.nom,r.prenom,r.matricule,r.metier,r.adresse,r.cp,r.ville,r.site,r.vehicule,r.immat,c.elec?"Électrique":"Thermique",c.d??"",c.j??"",c.c??"",c.t??"",fmt(c.kmMois,1),fmt(c.besoin,2),c.elec?"kWh":"L",fmt(c.hebdo,2),c.ratio!=null?fmt(c.ratio,2):"",r.repos,r.carte||""].map(v=>typeof v==="number"?String(v).replace(".",","):String(v??"").replace(/[\t\n]/g," ")).join("\t")));
   const text=lines.join("\n");
   try{await navigator.clipboard.writeText(text);toast(`${plural(list.length,"ligne")} copiée${list.length>1?"s":""} · collez dans Excel avec Ctrl+V.`)}
   catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();toast(ok?`${plural(list.length,"ligne")} copiée${list.length>1?"s":""}.`:"La copie a été refusée par le navigateur.")}
@@ -992,10 +1231,12 @@ document.addEventListener("keydown",e=>{if(e.key==="/"&&!D&&!e.target.closest("i
 /* ---------- rendu global ---------- */
 function render(){
   $("cCollab").textContent=S.rows.length;$("cVeh").textContent=S.vehicles.length;$("cSites").textContent=S.sites.length;
-  renderScope();renderKpis();renderChart();renderSiteSelect();renderChips();renderList();
+  renderScope();renderKpis();renderChart();renderSiteSelect();renderChips();renderDayNote();renderList();
+  const nh=holidaysFrom(today(),1)[0];$("cHol").textContent=nh?shortDate(nh[0]):"";
   if(UI.tab==="veh"&&!$("tab-veh").contains(document.activeElement))renderVeh();
   if(UI.tab==="sites"&&!$("tab-sites").contains(document.activeElement))renderSites();
   if(UI.tab==="methode")renderParams();
+  if(UI.tab==="feries")renderHol();
 }
 function renderAll(){renderNotice();render();renderVeh();renderSites();renderParams();renderReset()}
 renderAll();
