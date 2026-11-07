@@ -12,274 +12,426 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-/* Layout: outil de travail — barre d'en-tête, bandeau de synthèse, onglets, tableau ; fiche de calcul en panneau latéral */
+/* Layout : bandeau de marque vert pétrole qui porte les chiffres clés, puis plan de travail clair (répartition par magasin, onglets, liste), fiche de calcul en panneau latéral */
 :root{
-  --bg:#f2f4f3; --surface:#ffffff; --sunk:#e8ecea; --line:#d3dad7;
-  --ink:#16221f; --muted:#5c6b66;
-  --fuel:#b8660b; --fuel-soft:#fbeedd;
-  --volt:#17708a; --volt-soft:#dcf0f5;
-  --warn:#a63d1f; --warn-soft:#fbe6df;
-  --ok:#2c7a4b; --ok-soft:#e1f2e7;
-  --accent:#1d4f45; --accent-ink:#ffffff;
+  --bg:#eef2f0; --surface:#ffffff; --sunk:#e5ebe8; --line:#d6ddd9; --line-strong:#b8c4bf;
+  --ink:#13201c; --muted:#5a6a64; --faint:#87958f;
+  --brand:#0f3a32; --brand-2:#14463c; --brand-ink:#eaf3ef; --brand-muted:#a3c1b7; --brand-line:rgba(234,243,239,.14);
+  --fuel:#a85a08; --fuel-bar:#e08a2c; --fuel-soft:#fbeedd;
+  --volt:#11708a; --volt-bar:#2c9cb8; --volt-soft:#ddf0f5; --volt-band:#86d6e8;
+  --trip:#a9bab4; --km-bar:#6f8a82;
+  --warn:#ad3c1b; --warn-soft:#fbe6dd; --ok:#2a7a4a; --ok-soft:#e1f2e7; --ok-band:#86d9a3;
+  --accent:#0f3a32; --accent-ink:#ffffff;
+  --shadow:0 1px 2px rgba(15,40,34,.06),0 6px 20px rgba(15,40,34,.06);
   --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:6px;
+  --r:8px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#111816; --surface:#18211e; --sunk:#202b28; --line:#2f3d39;
-  --ink:#e6ece9; --muted:#9aaaa4;
-  --fuel:#f0a24a; --fuel-soft:#3a2a16;
-  --volt:#5cc0da; --volt-soft:#15323a;
-  --warn:#f08a6a; --warn-soft:#3b211a;
-  --ok:#6cc890; --ok-soft:#183324;
-  --accent:#7cc6b4; --accent-ink:#0d1a17;
+  --bg:#0e1513; --surface:#151e1b; --sunk:#1c2724; --line:#293632; --line-strong:#3c4c47;
+  --ink:#e5ece9; --muted:#9aaba5; --faint:#6e7f79;
+  --brand:#0b2a24; --brand-2:#10342d; --brand-ink:#e5f0eb; --brand-muted:#8fb0a5; --brand-line:rgba(229,240,235,.12);
+  --fuel:#f2a650; --fuel-bar:#de8d36; --fuel-soft:#35260f;
+  --volt:#62c3dc; --volt-bar:#3aa7c3; --volt-soft:#132f38; --volt-band:#86d6e8;
+  --trip:#4a5d57; --km-bar:#7f9a92;
+  --warn:#f08e6e; --warn-soft:#3a1f17; --ok:#6fcb93; --ok-soft:#16301f; --ok-band:#86d9a3;
+  --accent:#7cc6b4; --accent-ink:#0b1714;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#111816; --surface:#18211e; --sunk:#202b28; --line:#2f3d39;
-  --ink:#e6ece9; --muted:#9aaaa4;
-  --fuel:#f0a24a; --fuel-soft:#3a2a16;
-  --volt:#5cc0da; --volt-soft:#15323a;
-  --warn:#f08a6a; --warn-soft:#3b211a;
-  --ok:#6cc890; --ok-soft:#183324;
-  --accent:#7cc6b4; --accent-ink:#0d1a17;
+  --bg:#0e1513; --surface:#151e1b; --sunk:#1c2724; --line:#293632; --line-strong:#3c4c47;
+  --ink:#e5ece9; --muted:#9aaba5; --faint:#6e7f79;
+  --brand:#0b2a24; --brand-2:#10342d; --brand-ink:#e5f0eb; --brand-muted:#8fb0a5; --brand-line:rgba(229,240,235,.12);
+  --fuel:#f2a650; --fuel-bar:#de8d36; --fuel-soft:#35260f;
+  --volt:#62c3dc; --volt-bar:#3aa7c3; --volt-soft:#132f38; --volt-band:#86d6e8;
+  --trip:#4a5d57; --km-bar:#7f9a92;
+  --warn:#f08e6e; --warn-soft:#3a1f17; --ok:#6fcb93; --ok-soft:#16301f; --ok-band:#86d9a3;
+  --accent:#7cc6b4; --accent-ink:#0b1714;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25);
   color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
-.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
 h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
-h1{font-size:2.1rem;line-height:1}
-h2{font-size:1.45rem}
-h3{font-size:1.15rem}
-.num,td.n,.tile b{font-variant-numeric:tabular-nums}
 button,input,select{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2px solid var(--fuel-bar);outline-offset:2px}
+.in{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:16px;height:16px;flex:none}
 
-/* En-tête */
-.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
-.head p{margin:6px 0 0;color:var(--muted);max-width:62ch}
-.actions{display:flex;flex-wrap:wrap;gap:8px}
-.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 12px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
-.btn:hover{border-color:var(--muted)}
+/* Boutons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);padding:8px 13px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;text-decoration:none;color:var(--ink);transition:background .12s,border-color .12s}
+.btn:hover{border-color:var(--line-strong);background:var(--sunk)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.btn.ghost{background:transparent}
-.btn.small{padding:5px 9px;font-size:12px}
-.btn[disabled]{opacity:.5;cursor:not-allowed}
-.btn svg{width:15px;height:15px}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--sunk)}
+.btn.danger{color:var(--warn)}
+.btn.small{padding:5px 10px;font-size:12px}
+.btn[disabled],.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.iconbtn{display:inline-grid;place-items:center;width:34px;height:34px;border:0;background:transparent;border-radius:var(--r);cursor:pointer;color:var(--muted)}
+.iconbtn:hover{background:var(--sunk);color:var(--ink)}
+.iconbtn[disabled]{opacity:.35;pointer-events:none}
 
-/* Bandeaux */
-.notice{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;border-radius:var(--r);background:var(--fuel-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--fuel) 35%,transparent)}
-.notice.info{background:var(--sunk);border-color:var(--line)}
-.notice.err{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
-.notice span{flex:1 1 280px;min-width:0}
+/* Bandeau de marque */
+.band{background:var(--brand);color:var(--brand-ink);background-image:radial-gradient(1200px 300px at 85% -40%,var(--brand-2),transparent 70%)}
+.band .in{padding-block:16px 22px;display:flex;flex-direction:column;gap:18px}
+.bar-top{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;min-width:0}
+.brand svg{width:38px;height:38px;flex:none}
+.brand b{display:block;font-family:var(--f-display);font-size:1.6rem;font-weight:700;letter-spacing:.08em;line-height:1}
+.brand span{display:block;font-size:12.5px;color:var(--brand-muted);margin-top:2px}
+.band .btn{background:transparent;border-color:var(--brand-line);color:var(--brand-ink)}
+.band .btn:hover{background:var(--brand-line)}
+.band .btn.primary{background:var(--fuel-bar);border-color:var(--fuel-bar);color:#1d1307}
+.band .btn.primary:hover{filter:brightness(1.07)}
+.scope{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13px;color:var(--brand-muted);min-height:24px}
+.scope b{color:var(--brand-ink);font-weight:600}
+.scope button{background:none;border:0;color:var(--brand-ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;font-size:13px}
+.kpis{display:grid;grid-template-columns:1.5fr 1fr 1fr 1.15fr;gap:12px}
+.kpi{border:1px solid var(--brand-line);background:rgba(255,255,255,.04);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi small{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--brand-muted);font-weight:600}
+.kpi b{font-family:var(--f-display);font-weight:600;font-size:2.2rem;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap}
+.kpi b span{font-family:var(--f-body);font-size:13px;font-weight:600;color:var(--brand-muted)}
+.kpi em{font-style:normal;font-size:12.5px;color:var(--brand-muted)}
+.kpi em strong{color:var(--brand-ink);font-weight:600}
+.kpi.hero b{font-size:3.3rem;color:var(--fuel-bar)}
+.kpi.volt b{color:var(--volt-band)}
+.prog{height:6px;border-radius:3px;background:var(--brand-line);overflow:hidden;margin:4px 0 2px}
+.prog i{display:block;height:100%;background:var(--ok-band);border-radius:0 3px 3px 0}
+.kpi .go{align-self:flex-start;margin-top:4px;background:none;border:0;color:var(--brand-ink);font-weight:600;font-size:13px;cursor:pointer;padding:2px 0;display:inline-flex;gap:6px;align-items:center;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:980px){.kpis{grid-template-columns:1fr 1fr}.kpi.hero,.kpi:last-child{grid-column:1/-1}}
+@media (max-width:560px){.kpis{gap:8px}.kpi{padding:12px}.kpi b{font-size:1.75rem}.kpi.hero b{font-size:2.7rem}.band .btn:not(.primary) .lbl{display:none}.band .btn:not(.primary){padding:8px 10px}.band .in{gap:14px}}
 
-/* Formule */
-.formula{font-family:var(--f-mono);font-size:12.5px;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:10px 14px;overflow-x:auto;white-space:nowrap;color:var(--muted)}
-.formula b{color:var(--ink);font-weight:500}
+/* Plan de travail */
+main.in{padding-block:20px 56px;display:flex;flex-direction:column;gap:18px}
+.notice{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+.notice .ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--fuel-soft);color:var(--fuel)}
+.notice.ok .ic{background:var(--ok-soft);color:var(--ok)}
+.notice.err .ic{background:var(--warn-soft);color:var(--warn)}
+.notice .txt{flex:1 1 300px;min-width:0}
+.notice .txt b{display:block}
+.notice .txt span{color:var(--muted);font-size:13px}
+.notice .acts{display:flex;gap:6px;flex-wrap:wrap}
 
-/* Synthèse */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.tile{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.tile small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-.tile b{font-family:var(--f-display);font-size:1.9rem;font-weight:600;line-height:1.05}
-.tile em{font-style:normal;color:var(--muted);font-size:12px}
-.tile.fuel b{color:var(--fuel)}
-.tile.volt b{color:var(--volt)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.card-h{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:14px 16px 10px}
+.card-h h2{font-size:1.35rem;margin-right:auto}
+.card-h p{margin:0;color:var(--muted);font-size:12.5px;flex-basis:100%}
+.seg{display:inline-flex;background:var(--sunk);border-radius:var(--r);padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:5px 11px;border-radius:6px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;font-variant-numeric:tabular-nums}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 
-/* Paramètres */
-.params{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-size:13px;color:var(--muted)}
-.params label{display:flex;align-items:center;gap:6px}
-.params input{width:78px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:var(--surface);text-align:right}
+/* Graphique par magasin */
+.bars{display:flex;flex-direction:column;padding:4px 8px 8px}
+.bar-row{display:grid;grid-template-columns:minmax(120px,260px) 1fr minmax(70px,auto);align-items:center;gap:12px;border:0;background:transparent;padding:6px 8px;border-radius:6px;cursor:pointer;text-align:left;width:100%}
+.bar-row:hover{background:var(--sunk)}
+.bar-row .bl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.bar-row .bl small{color:var(--faint);margin-left:6px;font-size:11.5px}
+.bar-row .track{height:14px;position:relative}
+.bar-row .track i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0;background:var(--fuel-bar);min-width:2px;transition:width .3s}
+.bars.m-K .track i{background:var(--volt-bar)} .bars.m-km .track i{background:var(--km-bar)}
+.bar-row .bv{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;font-size:13px;white-space:nowrap}
+.bar-row .bv span{color:var(--muted);font-weight:500;font-size:11.5px;margin-left:2px}
+.bars.has-sel .bar-row:not(.sel){opacity:.4}
+.bars.has-sel .bar-row:not(.sel):hover{opacity:.8}
+.bar-row.sel .bl{font-weight:700}
+.card-f{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 16px 12px;font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.linkbtn{background:none;border:0;color:var(--ink);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:0;font-size:12.5px}
+.tip{position:fixed;z-index:40;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:8px 10px;border-radius:6px;box-shadow:var(--shadow);line-height:1.5;max-width:260px}
+.tip b{display:block;font-size:12.5px}
+@media (max-width:640px){.bar-row{grid-template-columns:1fr auto;gap:4px 10px}.bar-row .track{grid-column:1/-1;grid-row:2;height:10px}}
 
 /* Onglets */
-.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
-.tab{border:0;background:none;padding:10px 14px;cursor:pointer;font-family:var(--f-display);font-size:1.12rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
-.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--fuel)}
-.tab .count{font-family:var(--f-body);font-size:11px;background:var(--sunk);padding:1px 6px;border-radius:9px;margin-left:4px;vertical-align:2px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tab{border:0;background:none;padding:10px 14px 11px;cursor:pointer;font-family:var(--f-display);font-size:1.15rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap;display:inline-flex;align-items:center;gap:7px}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--fuel-bar)}
+.tab .count{font-family:var(--f-body);font-size:11px;font-weight:600;background:var(--sunk);padding:1px 7px;border-radius:9px;color:var(--muted)}
+.panel{display:flex;flex-direction:column;gap:12px}
 
+/* Barre d'outils */
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.toolbar input[type=search],.toolbar select{padding:7px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
-.toolbar input[type=search]{flex:1 1 220px}
-.toolbar select{flex:0 1 240px}
-.toolbar .spacer{flex:1}
+.search{position:relative;flex:1 1 240px;min-width:0}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.search input{width:100%;padding:9px 34px 9px 34px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.search kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--f-mono);font-size:11px;color:var(--faint);border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.toolbar select{padding:9px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0;flex:0 1 250px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:20px;padding:6px 12px;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.chip:hover{border-color:var(--line-strong);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .dot{width:7px;height:7px;border-radius:50%}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.75}
 
-/* Tableaux */
-.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+/* Tableau */
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
 table{border-collapse:collapse;width:100%;font-size:13px}
-th{position:sticky;top:0;background:var(--sunk);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px 10px;white-space:nowrap;border-bottom:1px solid var(--line)}
-th.n,td.n{text-align:right}
-td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
-tr:last-child td{border-bottom:0}
-tbody tr.row{cursor:pointer}
-tbody tr.row:hover td{background:color-mix(in srgb,var(--sunk) 60%,transparent)}
-td .who{font-weight:600}
-td .sub{color:var(--muted);font-size:12px}
-td.calc{font-weight:600}
-td.fuelc{color:var(--fuel)} td.voltc{color:var(--volt)}
-.unit{color:var(--muted);font-weight:400;font-size:11px;margin-left:2px}
-.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+th{background:var(--surface);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;padding:0;white-space:nowrap;border-bottom:1px solid var(--line)}
+th .sort{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:4px;width:100%;padding:11px 10px;cursor:pointer}
+th .sort:hover{color:var(--ink)}
+th .sort:focus-visible{outline:2px solid var(--fuel-bar);outline-offset:-2px}
+th.n .sort{justify-content:flex-end}
+th .sort svg{width:12px;height:12px;opacity:0}
+th[aria-sort] .sort{color:var(--ink)}
+th[aria-sort] .sort svg{opacity:1}
+th[aria-sort="descending"] .sort svg{transform:rotate(180deg)}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.row{cursor:pointer;transition:background .1s}
+tbody tr.row:hover td{background:var(--sunk)}
+tbody tr.row:focus-visible{outline:2px solid var(--fuel-bar);outline-offset:-2px}
+.who{font-weight:600}
+.clip{max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.sub{color:var(--muted);font-size:12px}
+.unit{color:var(--muted);font-weight:500;font-size:11px;margin-left:2px}
+.big{font-family:var(--f-display);font-size:1.2rem;font-weight:600}
+.mbar{height:3px;background:var(--sunk);border-radius:2px;margin:5px 0 0 auto;width:80px;overflow:hidden}
+.mbar i{display:block;height:100%;background:var(--fuel-bar);border-radius:0 2px 2px 0}
+.mbar.v i{background:var(--volt-bar)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:600}
+.pill svg{width:12px;height:12px}
 .pill.ok{background:var(--ok-soft);color:var(--ok)}
 .pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.ex{background:var(--sunk);color:var(--muted)}
-.pill.elec{background:var(--volt-soft);color:var(--volt)}
-.empty{padding:28px;text-align:center;color:var(--muted)}
-tfoot td{font-weight:700;background:var(--sunk);border-top:1px solid var(--line)}
+.tag{display:inline-block;padding:0 6px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;background:var(--volt-soft);color:var(--volt);margin-left:6px;vertical-align:1px}
+.miss{color:var(--warn);font-weight:600}
+tfoot td{font-weight:700;background:var(--sunk);border-top:1px solid var(--line);border-bottom:0}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty b{color:var(--ink);font-size:15px}
 
-/* Tableaux de référence éditables */
-.ref input,.ref select{width:100%;padding:5px 7px;border:1px solid transparent;border-radius:4px;background:transparent;min-width:70px}
+/* Cartes mobiles */
+.cards{display:flex;flex-direction:column;gap:10px}
+.ccard{all:unset;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;box-shadow:var(--shadow)}
+.ccard:focus-visible{outline:2px solid var(--fuel-bar)}
+.ccard .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.ccard .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.ccard .figs small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.ccard .figs b{font-family:var(--f-display);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums}
+.ccard .figs b.f{color:var(--fuel)} .ccard .figs b.v{color:var(--volt)}
+
+/* Référentiels */
+.ref input,.ref select{width:100%;padding:6px 8px;border:1px solid transparent;border-radius:6px;background:transparent;min-width:80px}
 .ref input:hover,.ref select:hover{border-color:var(--line)}
-.ref input:focus,.ref select:focus{border-color:var(--accent);background:var(--surface)}
-.ref input.n{text-align:right;max-width:110px}
-.iconbtn{border:0;background:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:4px}
-.iconbtn:hover{color:var(--warn);background:var(--warn-soft)}
+.ref input:focus,.ref select:focus{border-color:var(--line-strong);background:var(--surface);outline:none;box-shadow:0 0 0 3px var(--fuel-soft)}
+.ref .unitcell{display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.ref .unitcell input{text-align:right;max-width:90px}
+.ref .countbtn{background:none;border:0;cursor:pointer;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px;padding:2px 4px}
+.ref .countbtn[disabled]{text-decoration:none;color:var(--faint);cursor:default}
+.helptext{color:var(--muted);font-size:13px;margin:0;max-width:80ch}
 
-/* Méthode */
-.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.method section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.method p{margin:0;color:var(--muted);max-width:65ch}
-.method code{font-family:var(--f-mono);font-size:12px;background:var(--sunk);padding:2px 5px;border-radius:3px;color:var(--ink);white-space:normal}
+/* Méthode & réglages */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.step .k{font-family:var(--f-display);font-size:.95rem;font-weight:700;color:var(--fuel);letter-spacing:.06em}
+.step h3{font-size:1.2rem}
+.step p{margin:0;color:var(--muted);font-size:13px}
+.step code{font-family:var(--f-mono);font-size:11.5px;background:var(--sunk);padding:6px 8px;border-radius:6px;color:var(--ink);display:block;white-space:normal}
+.step .ex{font-family:var(--f-mono);font-size:11.5px;color:var(--muted)}
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;padding:4px 16px 16px}
 
-/* Panneau fiche collaborateur */
-.scrim{position:fixed;inset:0;background:rgba(10,18,16,.45);z-index:20}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:21;display:flex;flex-direction:column;border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.18);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
-.drawer header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
-.drawer .body{overflow-y:auto;padding:16px 18px 24px;display:flex;flex-direction:column;gap:16px}
-.drawer footer{display:flex;gap:8px;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface)}
-fieldset{border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
-fieldset legend{font-family:var(--f-display);font-size:1.05rem;font-weight:600;margin-bottom:8px;padding:0}
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+/* Champs */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
 .field.full{grid-column:1/-1}
-.field label{font-size:12px;color:var(--muted);font-weight:600}
-.field input,.field select{padding:7px 9px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);width:100%;min-width:0}
-.field .hint{font-size:11.5px;color:var(--muted)}
-.inline{display:flex;gap:6px;align-items:stretch}
-.inline input{flex:1}
-@media (max-width:440px){fieldset{grid-template-columns:1fr}}
+.field label,.field .lab{font-size:12px;color:var(--muted);font-weight:600}
+.field input,.field select{padding:9px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);width:100%;min-width:0}
+.field input:focus,.field select:focus{outline:none;border-color:var(--line-strong);box-shadow:0 0 0 3px var(--fuel-soft)}
+.field .hint{font-size:11.5px;color:var(--faint)}
+.unitbox{position:relative}
+.unitbox input{padding-right:58px;font-variant-numeric:tabular-nums}
+.unitbox span{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--faint);pointer-events:none}
+.field.need input,.field.need select{border-color:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
 
-/* Fiche de calcul */
-.calcsheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.calcsheet .line{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);align-items:baseline}
-.calcsheet .line:last-child{border-bottom:0}
-.calcsheet .lbl{color:var(--muted);font-size:12.5px}
-.calcsheet .lbl code{font-family:var(--f-mono);font-size:11.5px;color:var(--ink)}
-.calcsheet .val{font-family:var(--f-display);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
-.calcsheet .line.key{background:var(--fuel-soft)}
-.calcsheet .line.key .val{color:var(--fuel);font-size:1.6rem}
-.calcsheet.elec .line.key{background:var(--volt-soft)}
-.calcsheet.elec .line.key .val{color:var(--volt)}
-.missing{font-size:12.5px;color:var(--warn)}
-.confirmbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
-@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+/* Panneau fiche */
+.scrim{position:fixed;inset:0;background:rgba(6,14,12,.5);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:21;display:flex;flex-direction:column;box-shadow:-16px 0 40px rgba(0,0,0,.22);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.dh{display:flex;align-items:center;gap:10px;padding:12px 12px 12px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.dh-main{flex:1;min-width:0}
+.dh h2{font-size:1.5rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dh-sub{color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dh-nav{display:flex;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dbody{overflow-y:auto;padding:18px 20px 28px;display:flex;flex-direction:column;gap:18px;flex:1}
+.df{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--line);background:var(--surface)}
+.df .r{display:flex;gap:8px}
+.result{border-radius:12px;padding:16px;display:grid;grid-template-columns:1.2fr 1fr;gap:14px;background:var(--fuel-soft);border:1px solid color-mix(in srgb,var(--fuel-bar) 30%,transparent)}
+.result.elec{background:var(--volt-soft);border-color:color-mix(in srgb,var(--volt-bar) 30%,transparent)}
+.result small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.result .main b{font-family:var(--f-display);font-size:3rem;font-weight:600;line-height:1;color:var(--fuel);font-variant-numeric:tabular-nums}
+.result.elec .main b{color:var(--volt)}
+.result .main b span{font-size:1.2rem;margin-left:4px}
+.result .main em{display:block;font-style:normal;font-size:12px;color:var(--muted);margin-top:6px}
+.result .side{display:flex;flex-direction:column;gap:8px;border-left:1px solid color-mix(in srgb,var(--ink) 12%,transparent);padding-left:14px}
+.result .side b{font-family:var(--f-display);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums}
+.result .done{grid-column:1/-1;display:flex;align-items:center;gap:6px;color:var(--ok);font-weight:600;font-size:13px}
+@media (max-width:420px){.result{grid-template-columns:1fr}.result .side{border-left:0;padding-left:0;flex-direction:row;flex-wrap:wrap;gap:8px 18px}}
+.trip h3{font-size:1.05rem;display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.trip h3 span{font-family:var(--f-body);font-size:12.5px;color:var(--muted);font-weight:600}
+.tripbar{display:flex;gap:2px;height:12px}
+.tripbar i{display:block;height:100%;background:var(--trip)}
+.tripbar i:first-child{border-radius:3px 0 0 3px}
+.tripbar i:last-child{border-radius:0 4px 4px 0}
+.tripbar i.t{background:var(--fuel-bar)}
+.trip.elec .tripbar i.t{background:var(--volt-bar)}
+.tripleg{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:8px;font-size:12px;color:var(--muted)}
+.tripleg span{display:inline-flex;align-items:center;gap:6px}
+.tripleg span::before{content:"";width:10px;height:10px;border-radius:2px;background:var(--trip)}
+.tripleg span.t::before{background:var(--fuel-bar)}
+.trip.elec .tripleg span.t::before{background:var(--volt-bar)}
+.formula{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);margin-top:10px;padding:8px 10px;background:var(--sunk);border-radius:6px;overflow-x:auto;white-space:nowrap}
+.missing{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 12px;border-radius:var(--r);background:var(--warn-soft);color:var(--warn);font-size:13px;font-weight:600}
+.missing button{border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);background:var(--surface);color:var(--warn);border-radius:14px;padding:3px 10px;font-size:12px;font-weight:600;cursor:pointer}
+fieldset{border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+fieldset legend{font-family:var(--f-display);font-size:1.1rem;font-weight:600;margin-bottom:10px;padding:0}
+.seg.days{display:flex}
+.seg.days button{flex:1;padding:7px 0}
+.maps{margin-top:6px;align-self:flex-start}
+@media (max-width:440px){fieldset{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:no-preference){.drawer.anim{animation:slide .2s ease-out}@keyframes slide{from{transform:translateX(32px);opacity:.5}to{transform:none;opacity:1}}.toast{animation:pop .2s ease-out}@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}}
+
+/* Toasts, dépôt de fichier */
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:50;display:flex;flex-direction:column;gap:8px;width:min(520px,calc(100% - 32px))}
+.toast{display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--bg);padding:11px 14px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:13px}
+.toast span{flex:1;min-width:0}
+.toast button{background:none;border:0;color:var(--fuel-bar);font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap;padding:2px 4px}
+.drop{position:fixed;inset:0;z-index:60;background:color-mix(in srgb,var(--brand) 88%,transparent);display:grid;place-items:center;padding:24px}
+.drop div{border:2px dashed var(--brand-muted);border-radius:16px;padding:48px 32px;text-align:center;color:var(--brand-ink);max-width:460px;width:100%}
+.drop b{display:block;font-family:var(--f-display);font-size:1.8rem;margin:10px 0 4px}
+.drop span{color:var(--brand-muted);font-size:13px}
 </style>
 
-<div class="wrap">
-  <div class="head">
-    <div>
-      <h1>Besoin carburant par collaborateur</h1>
-      <p>Domicile, magasin d'affectation, véhicule et kilomètres de tournée : l'outil calcule le besoin mensuel, le plafond hebdomadaire et le ratio par jour travaillé, avec la même méthode que votre fichier Excel.</p>
-    </div>
-    <div class="actions">
+<header class="band">
+  <div class="in">
+    <div class="bar-top">
+      <div class="brand">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="2"/><path d="M8 26a12 12 0 0 1 24 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-opacity=".35"/><path d="M8 26a12 12 0 0 1 17-10.9" fill="none" stroke="#e08a2c" stroke-width="3" stroke-linecap="round"/><path d="M20 26l6.5-8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="26" r="2.6" fill="currentColor"/><text x="20" y="35" text-anchor="middle" font-size="5.5" font-family="Arial" font-weight="700" fill="currentColor" fill-opacity=".6">E · F</text></svg>
+        <div><b>CARBURATOR</b><span>Besoin carburant par collaborateur</span></div>
+      </div>
       <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.csv" hidden>
-      <button class="btn" id="btnImport" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L7 8m5-5l5 5M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>Importer Excel</button>
-      <button class="btn" id="btnCopy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg>Copier le tableau</button>
-      <button class="btn primary" id="btnExport" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exporter Excel</button>
+      <button class="btn" id="btnCopy" type="button" title="Copier le tableau pour le coller dans Excel"></button>
+      <button class="btn" id="btnExport" type="button"></button>
+      <button class="btn primary" id="btnImport" type="button"></button>
     </div>
+    <div class="scope" id="scope"></div>
+    <div class="kpis" id="kpis"></div>
   </div>
+</header>
 
+<main class="in">
   <div id="notice"></div>
 
-  <div class="formula" aria-label="Méthode de calcul">
-    Km/mois = (<b>distance domicile→magasin</b> × 2 + <b>km tournée/jour</b>) × <b>jours/semaine</b> × <b id="fS">4,33</b> &nbsp;·&nbsp;
-    Besoin/mois = km/mois × <b>conso/100 km</b> ÷ 100 &nbsp;·&nbsp; Plafond hebdo = besoin/mois ÷ <b id="fS2">4,33</b> &nbsp;·&nbsp; Ratio/jour = plafond hebdo ÷ jours
-  </div>
-
-  <div class="tiles" id="tiles"></div>
-
-  <div class="params">
-    <label for="pSem">Semaines par mois <input id="pSem" type="number" step="0.01" min="1"></label>
-    <label for="pPrixL">Prix carburant €/L <input id="pPrixL" type="number" step="0.01" min="0"></label>
-    <label for="pPrixK">Prix électricité €/kWh <input id="pPrixK" type="number" step="0.01" min="0"></label>
-  </div>
+  <section class="card" id="chartCard">
+    <div class="card-h">
+      <h2 id="chartTitle">Besoin par magasin</h2>
+      <div class="seg" role="group" aria-label="Mesure affichée" id="metricSeg">
+        <button type="button" data-m="L" aria-pressed="true">Litres</button>
+        <button type="button" data-m="K" aria-pressed="false">kWh</button>
+        <button type="button" data-m="km" aria-pressed="false">Km</button>
+      </div>
+    </div>
+    <div class="bars" id="bars"></div>
+    <div class="card-f" id="chartFoot"></div>
+  </section>
 
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" data-tab="collab" aria-selected="true">Collaborateurs <span class="count" id="cCollab"></span></button>
-    <button class="tab" role="tab" data-tab="veh" aria-selected="false">Véhicules <span class="count" id="cVeh"></span></button>
     <button class="tab" role="tab" data-tab="sites" aria-selected="false">Magasins <span class="count" id="cSites"></span></button>
-    <button class="tab" role="tab" data-tab="methode" aria-selected="false">Méthode</button>
+    <button class="tab" role="tab" data-tab="veh" aria-selected="false">Véhicules <span class="count" id="cVeh"></span></button>
+    <button class="tab" role="tab" data-tab="methode" aria-selected="false">Méthode &amp; réglages</button>
   </div>
 
-  <!-- Collaborateurs -->
-  <div id="tab-collab" class="panel" style="display:flex;flex-direction:column;gap:12px">
+  <section id="tab-collab" class="panel">
     <div class="toolbar">
-      <input type="search" id="q" placeholder="Rechercher un nom, une ville, un matricule…" aria-label="Rechercher">
+      <div class="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="q" placeholder="Nom, ville, matricule, véhicule…" aria-label="Rechercher"><kbd>/</kbd></div>
       <select id="fSite" aria-label="Filtrer par magasin"></select>
-      <select id="fStatus" aria-label="Filtrer par statut">
-        <option value="">Tous les statuts</option>
-        <option value="ok">Calcul complet</option>
-        <option value="missing">À compléter</option>
-        <option value="elec">Véhicules électriques</option>
-      </select>
-      <button class="btn primary" id="btnAdd" type="button">+ Ajouter un collaborateur</button>
+      <button class="btn primary" id="btnAdd" type="button"></button>
     </div>
-    <div class="tablebox">
-      <table>
-        <thead><tr>
-          <th>Collaborateur</th><th>Domicile</th><th>Magasin</th><th>Véhicule</th>
-          <th class="n">Dom.→mag.</th><th class="n">Jours/sem.</th><th class="n">Tournée/j</th>
-          <th class="n">Km/mois</th><th class="n">Besoin/mois</th><th class="n">Plafond hebdo</th><th class="n">Ratio/jour</th><th>Statut</th>
-        </tr></thead>
-        <tbody id="rows"></tbody>
-        <tfoot id="foot"></tfoot>
-      </table>
-    </div>
-  </div>
+    <div class="chips" role="group" aria-label="Filtrer par statut" id="chips"></div>
+    <div id="list"></div>
+  </section>
 
-  <!-- Véhicules -->
-  <div id="tab-veh" class="panel" hidden style="flex-direction:column;gap:12px">
-    <div class="notice info"><span>La consommation saisie ici sert de valeur par défaut quand vous attribuez ce véhicule à un collaborateur. Les véhicules électriques sont comptés en kWh/100 km et donnent un besoin en kWh, séparé du carburant.</span></div>
+  <section id="tab-sites" class="panel" hidden>
+    <div class="toolbar">
+      <div class="search"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="qSite" placeholder="Rechercher un magasin…" aria-label="Rechercher un magasin"></div>
+      <button class="btn" id="addSite" type="button">+ Ajouter un magasin</button>
+    </div>
+    <p class="helptext">Les km de tournée par jour sont repris automatiquement pour chaque nouveau collaborateur du magasin. Ajoutez l'adresse du magasin pour que l'itinéraire Google Maps soit exact.</p>
     <div class="tablebox">
       <table class="ref">
-        <thead><tr><th>Type de véhicule</th><th class="n">Conso /100 km</th><th>Énergie</th><th class="n">Collaborateurs</th><th></th></tr></thead>
-        <tbody id="vehRows"></tbody>
-      </table>
-    </div>
-    <div><button class="btn" id="addVeh" type="button">+ Ajouter un véhicule</button></div>
-  </div>
-
-  <!-- Magasins -->
-  <div id="tab-sites" class="panel" hidden style="flex-direction:column;gap:12px">
-    <div class="notice info"><span>Le kilométrage de tournée par jour est proposé par défaut pour chaque nouveau collaborateur du magasin (valeur la plus fréquente de votre fichier). L'adresse du magasin rend l'itinéraire Google Maps plus précis.</span></div>
-    <div class="tablebox">
-      <table class="ref">
-        <thead><tr><th>Magasin / site</th><th>Adresse du magasin (pour Maps)</th><th class="n">Tournée km/jour</th><th class="n">Collaborateurs</th><th></th></tr></thead>
+        <thead><tr><th style="padding:11px 12px">Magasin</th><th style="padding:11px 12px">Adresse (pour Maps)</th><th class="n" style="padding:11px 12px;text-align:right">Tournée / jour</th><th class="n" style="padding:11px 12px;text-align:right">Collab.</th><th class="n" style="padding:11px 12px;text-align:right">Besoin / mois</th><th></th></tr></thead>
         <tbody id="siteRows"></tbody>
       </table>
     </div>
-    <div><button class="btn" id="addSite" type="button">+ Ajouter un magasin</button></div>
-  </div>
+  </section>
 
-  <!-- Méthode -->
-  <div id="tab-methode" class="panel" hidden>
-    <div class="method">
-      <section><h3>1. Kilomètres par jour</h3><p>Aller-retour domicile ↔ magasin, plus la tournée du site.</p><p><code>(Distance Domicile-Magasin × 2) + Distance parcourue par jour</code></p><p>La distance domicile-magasin se mesure sur Google Maps : le bouton « Itinéraire Maps » de la fiche ouvre le trajet avec l'adresse du collaborateur et le magasin déjà remplis.</p></section>
-      <section><h3>2. Distance totale par mois</h3><p>Kilomètres par jour multipliés par le nombre de jours travaillés par semaine, puis par le nombre moyen de semaines dans un mois.</p><p><code>km/jour × Jours travaillés hebdo × 4,33</code></p></section>
-      <section><h3>3. Besoin en litres par mois</h3><p>Distance mensuelle multipliée par la consommation moyenne du véhicule.</p><p><code>Distance Total/Mois × Conso moyenne ÷ 100</code></p><p>Pour un véhicule électrique, le même calcul donne des kWh.</p></section>
-      <section><h3>4. Plafond hebdo et ratio par jour</h3><p>Le plafond hebdomadaire ramène le besoin mensuel à la semaine ; le ratio le répartit sur les jours travaillés.</p><p><code>Plafond = Besoin/mois ÷ 4,33</code><br><code>Ratio = Plafond ÷ Jours travaillés</code></p></section>
+  <section id="tab-veh" class="panel" hidden>
+    <div class="toolbar"><p class="helptext" style="flex:1 1 300px">La consommation sert de valeur par défaut quand vous attribuez ce véhicule. Les véhicules électriques sont comptés en kWh / 100 km, séparément du carburant.</p><button class="btn" id="addVeh" type="button">+ Ajouter un véhicule</button></div>
+    <div class="tablebox">
+      <table class="ref">
+        <thead><tr><th style="padding:11px 12px">Type de véhicule</th><th style="padding:11px 12px">Énergie</th><th class="n" style="padding:11px 12px;text-align:right">Conso / 100 km</th><th class="n" style="padding:11px 12px;text-align:right">Collab.</th><th></th></tr></thead>
+        <tbody id="vehRows"></tbody>
+      </table>
     </div>
-  </div>
-</div>
+  </section>
+
+  <section id="tab-methode" class="panel" hidden>
+    <div class="steps">
+      <div class="step"><span class="k">ÉTAPE 1</span><h3>Km par jour</h3><p>Aller-retour domicile ↔ magasin, plus la tournée du site.</p><code>Distance Domicile-Magasin × 2 + Tournée / jour</code><span class="ex">18 × 2 + 50 = 86 km</span></div>
+      <div class="step"><span class="k">ÉTAPE 2</span><h3>Km par mois</h3><p>Multipliés par les jours travaillés et les semaines moyennes d'un mois.</p><code>Km / jour × Jours / semaine × <span class="semv">4,33</span></code><span class="ex">86 × 4 × 4,33 = 1 489,5 km</span></div>
+      <div class="step"><span class="k">ÉTAPE 3</span><h3>Besoin / mois</h3><p>Distance mensuelle × consommation du véhicule. En kWh pour un électrique.</p><code>Km / mois × Conso ÷ 100</code><span class="ex">1 489,5 × 11,28 ÷ 100 = 168,0 L</span></div>
+      <div class="step"><span class="k">ÉTAPE 4</span><h3>Plafond hebdo et ratio</h3><p>Le besoin ramené à la semaine, puis réparti sur les jours travaillés.</p><code>Plafond = Besoin ÷ <span class="semv">4,33</span> · Ratio = Plafond ÷ Jours</code><span class="ex">168,0 ÷ 4,33 = 38,8 L · 38,8 ÷ 4 = 9,7 L</span></div>
+    </div>
+    <section class="card">
+      <div class="card-h"><h2>Réglages</h2><p>Ils s'appliquent à tous les calculs et à l'export Excel.</p></div>
+      <div class="settings">
+        <div class="field"><label for="pSem">Semaines par mois</label><div class="unitbox"><input id="pSem" inputmode="decimal"><span>sem.</span></div><span class="hint">4,33 = 52 semaines ÷ 12 mois</span></div>
+        <div class="field"><label for="pPrixL">Prix du carburant</label><div class="unitbox"><input id="pPrixL" inputmode="decimal"><span>€ / L</span></div><span class="hint">Sert au coût estimé</span></div>
+        <div class="field"><label for="pPrixK">Prix de l'électricité</label><div class="unitbox"><input id="pPrixK" inputmode="decimal"><span>€ / kWh</span></div><span class="hint">Recharge des véhicules électriques</span></div>
+      </div>
+    </section>
+    <section class="card">
+      <div class="card-h"><h2>Données</h2><p>Les collaborateurs, véhicules et magasins sont enregistrés dans ce navigateur uniquement. Pour les transmettre, utilisez l'export Excel.</p></div>
+      <div style="padding:4px 16px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="resetBox"></div>
+    </section>
+  </section>
+</main>
 
 <div id="drawerHost"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="tip" id="tip" hidden></div>
+<div class="drop" id="drop" hidden><div><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 15V3m0 0L7 8m5-5l5 5M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg><b>Déposez votre fichier Excel</b><span>Format besoin_carburant.xlsx · lu dans votre navigateur, rien n'est envoyé</span></div></div>
 
 <script>
 (function(){
 "use strict";
 const KEY="besoin-carburant-v1";
+const $=id=>document.getElementById(id);
 const fmt=(n,d=1)=>n==null||!isFinite(n)?"—":n.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmt0=n=>fmt(n,0);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10);
 const numOrNull=v=>{if(v===""||v==null)return null;const n=typeof v==="number"?v:parseFloat(String(v).replace(",",".").replace(/\s/g,""));return isFinite(n)?n:null};
+const plural=(n,s,p)=>n+" "+(n>1?(p||s+"s"):s);
+
+const I={
+ up:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L7 8m5-5l5 5M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>',
+ down:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>',
+ copy:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg>',
+ plus:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>',
+ close:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ left:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg>',
+ right:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>',
+ check:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ alert:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>',
+ map:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6-5.5-6-11a6 6 0 1112 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg>',
+ arrow:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14m-5-5l5 5-5 5"/></svg>',
+ sort:'<svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 3l4 5H2z"/></svg>',
+ trash:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>'
+};
+$("btnImport").innerHTML=I.up+"Importer Excel";
+$("btnExport").innerHTML=I.down+'<span class="lbl">Exporter</span>';$("btnExport").setAttribute("aria-label","Exporter en Excel");
+$("btnCopy").innerHTML=I.copy+'<span class="lbl">Copier</span>';$("btnCopy").setAttribute("aria-label","Copier le tableau");
+$("btnAdd").innerHTML=I.plus+"Ajouter";
 
 const SEED_VEH=[
  ["CITROEN E-JUMPY",30,"electrique"],["MERCEDES ATEGO 13T500",12.5,"thermique"],["RENAULT CLIO IV",5.2,"thermique"],
@@ -294,262 +446,399 @@ const SEED_ROWS=[
  {nom:"Bernard",prenom:"Inès",matricule:"EX-004",metier:"Dispatcheur Zone",adresse:"",cp:"77290",ville:"Mitry-Mory",site:"Monoprix Saint Germain des Pres",vehicule:"VOLKSWAGEN CADDY VAN MAXI",immat:"",distance:38.2,jours:4,tournee:50,conso:7.98,repos:"Mardi/Mercredi"},
  {nom:"Leroy",prenom:"Hugo",matricule:"EX-005",metier:"Livreur",adresse:"",cp:"78000",ville:"Versailles",site:"Monoprix Versailles",vehicule:"VOLKSWAGEN CADDY VAN MAXI",immat:"",distance:null,jours:5,tournee:50,conso:7.98,repos:"Jeudi"}];
 
-function seed(){
-  return {
-    example:true,source:"",
-    params:{sem:4.33,prixL:1.75,prixK:0.25},
-    vehicles:SEED_VEH.map(([nom,conso,energie])=>({id:uid(),nom,conso,energie})),
-    sites:SEED_SITES.map(([nom,tournee])=>({id:uid(),nom,adresse:"",tournee})),
-    rows:SEED_ROWS.map(r=>({id:uid(),...r}))
-  };
-}
+function seed(){return{example:true,source:"",params:{sem:4.33,prixL:1.75,prixK:0.25},
+  vehicles:SEED_VEH.map(([nom,conso,energie])=>({id:uid(),nom,conso,energie})),
+  sites:SEED_SITES.map(([nom,tournee])=>({id:uid(),nom,adresse:"",tournee})),
+  rows:SEED_ROWS.map(r=>({id:uid(),...r}))}}
 let S;
 try{const raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null}catch(e){S=null}
 if(!S||!Array.isArray(S.rows))S=seed();
-let undo=null;
+let lastImport=null;
 let saveT=null;
 function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
+const UI={sort:{key:"nom",dir:1},metric:"L",chartAll:false,status:"",site:"",q:"",qSite:"",tab:"collab"};
 
 const vehOf=name=>S.vehicles.find(v=>v.nom===name);
 const siteOf=name=>S.sites.find(s=>s.nom===name);
 const isElec=r=>(vehOf(r.vehicule)?.energie)==="electrique";
+const sem=()=>numOrNull(S.params.sem)||4.33;
 
 function calc(r){
-  const sem=numOrNull(S.params.sem)||4.33;
+  const s=sem();
   const d=numOrNull(r.distance),j=numOrNull(r.jours),t=numOrNull(r.tournee),c=numOrNull(r.conso);
   const missing=[];
-  if(d==null)missing.push("distance domicile→magasin");
-  if(!j)missing.push("jours travaillés");
-  if(t==null)missing.push("km de tournée");
-  if(c==null)missing.push("consommation");
-  if(!r.vehicule)missing.push("véhicule");
+  if(d==null)missing.push(["e_distance","distance domicile → magasin"]);
+  if(!j)missing.push(["e_jours","jours travaillés"]);
+  if(t==null)missing.push(["e_tournee","km de tournée"]);
+  if(!r.vehicule)missing.push(["e_vehicule","véhicule"]);
+  if(c==null)missing.push(["e_conso","consommation"]);
   const kmJour=(d||0)*2+(t||0);
-  const kmMois=kmJour*(j||0)*sem;
+  const kmMois=kmJour*(j||0)*s;
   const besoin=kmMois*(c||0)/100;
-  const hebdo=besoin/sem;
+  const hebdo=besoin/s;
   const ratio=j?hebdo/j:null;
-  return {d,j,t,c,sem,kmJour,kmMois,besoin,hebdo,ratio,missing,elec:isElec(r)};
+  return{d,j,t,c,sem:s,kmJour,kmMois,besoin,hebdo,ratio,missing,elec:isElec(r)};
 }
 const domicile=r=>[r.adresse,[r.cp,r.ville].filter(Boolean).join(" ")].filter(Boolean).join(", ");
 function mapsUrl(r){
-  const site=siteOf(r.site);
-  const dest=site&&site.adresse?site.adresse:(r.site||"");
-  const o=domicile(r);
+  const site=siteOf(r.site);const dest=site&&site.adresse?site.adresse:(r.site||"");const o=domicile(r);
   if(!o||!dest)return null;
   return "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+encodeURIComponent(o)+"&destination="+encodeURIComponent(dest);
 }
 
-/* ---------- rendu ---------- */
-const $=id=>document.getElementById(id);
-function filtered(){
-  const q=$("q").value.trim().toLowerCase();
-  const fs=$("fSite").value, st=$("fStatus").value;
+/* ---------- filtres ---------- */
+function rowsFor({ignoreSite=false,ignoreStatus=false}={}){
+  const q=UI.q.trim().toLowerCase();
   return S.rows.filter(r=>{
-    if(fs&&r.site!==fs)return false;
+    if(!ignoreSite&&UI.site&&r.site!==UI.site)return false;
     if(q){const hay=[r.nom,r.prenom,r.matricule,r.ville,r.cp,r.metier,r.site,r.vehicule,r.immat].join(" ").toLowerCase();if(!hay.includes(q))return false}
-    if(st){const c=calc(r);if(st==="ok"&&c.missing.length)return false;if(st==="missing"&&!c.missing.length)return false;if(st==="elec"&&!c.elec)return false}
+    if(!ignoreStatus&&UI.status){const c=calc(r);
+      if(UI.status==="ok"&&c.missing.length)return false;
+      if(UI.status==="missing"&&!c.missing.length)return false;
+      if(UI.status==="elec"&&!c.elec)return false}
     return true;
   });
 }
-function renderNotice(){
-  const n=$("notice");
-  if(undo){n.innerHTML=`<div class="notice info"><span>${esc(undo.msg)}</span><button class="btn small" id="undoBtn" type="button">Annuler l'import</button><button class="btn small ghost" id="undoClose" type="button">OK</button></div>`;
-    $("undoBtn").onclick=()=>{S=undo.prev;undo=null;save();renderAll()};$("undoClose").onclick=()=>{undo=null;renderNotice()};return}
-  if(S.example){n.innerHTML=`<div class="notice"><span><b>Données d'exemple.</b> Les 5 collaborateurs affichés sont fictifs. Importez votre fichier Excel (même format que <i>besoin_carburant.xlsx</i>) ou ajoutez vos collaborateurs un par un.</span><button class="btn small primary" id="nImport" type="button">Importer mon fichier</button></div>`;$("nImport").onclick=()=>$("fileInput").click();return}
-  n.innerHTML="";
+function sorted(list){
+  const k=UI.sort.key,d=UI.sort.dir;
+  const val=r=>{const c=calc(r);switch(k){case"nom":return(r.nom+" "+r.prenom).toLowerCase();case"site":return(r.site||"~").toLowerCase();case"status":return c.missing.length;case"jours":return c.j??-1;case"ratio":return c.ratio??-1;default:return c[k]??-1}};
+  return list.map(r=>({r,v:val(r)})).sort((a,b)=>typeof a.v==="string"?a.v.localeCompare(b.v,"fr")*d:(a.v-b.v)*d).map(x=>x.r);
 }
-function renderTiles(list){
-  let km=0,L=0,K=0,miss=0,hebdoL=0,hebdoK=0;
-  list.forEach(r=>{const c=calc(r);km+=c.kmMois;if(c.elec){K+=c.besoin;hebdoK+=c.hebdo}else{L+=c.besoin;hebdoL+=c.hebdo}if(c.missing.length)miss++});
+
+/* ---------- rendu : bandeau ---------- */
+function renderScope(){
+  const parts=[];
+  if(UI.site)parts.push("<b>"+esc(UI.site)+"</b>");
+  if(UI.status)parts.push("<b>"+({ok:"fiches complètes",missing:"fiches à compléter",elec:"véhicules électriques"}[UI.status])+"</b>");
+  if(UI.q.trim())parts.push("recherche « <b>"+esc(UI.q.trim())+"</b> »");
+  const src=S.example?"Données d'exemple":(S.source?"Fichier « "+esc(S.source)+" »":"Saisie manuelle");
+  $("scope").innerHTML=parts.length?`Sélection : ${parts.join(" · ")} <button type="button" id="clearF">Tout afficher</button>`:`${src} · tous les collaborateurs`;
+  const b=$("clearF");if(b)b.onclick=clearFilters;
+}
+function clearFilters(){UI.site="";UI.status="";UI.q="";$("q").value="";render()}
+function renderKpis(){
+  const list=rowsFor();
+  let km=0,L=0,K=0,hL=0,hK=0,miss=0;
+  list.forEach(r=>{const c=calc(r);km+=c.kmMois;if(c.elec){K+=c.besoin;hK+=c.hebdo}else{L+=c.besoin;hL+=c.hebdo}if(c.missing.length)miss++});
   const cost=L*(numOrNull(S.params.prixL)||0)+K*(numOrNull(S.params.prixK)||0);
-  $("tiles").innerHTML=`
-   <div class="tile"><small>Collaborateurs</small><b>${list.length}</b><em>${miss?miss+" à compléter":"tous complets"}</em></div>
-   <div class="tile"><small>Distance / mois</small><b>${fmt0(km)}</b><em>km</em></div>
-   <div class="tile fuel"><small>Carburant / mois</small><b>${fmt0(L)}</b><em>litres · plafond hebdo ${fmt0(hebdoL)} L</em></div>
-   <div class="tile volt"><small>Électricité / mois</small><b>${fmt0(K)}</b><em>kWh · plafond hebdo ${fmt0(hebdoK)} kWh</em></div>
-   <div class="tile"><small>Coût estimé / mois</small><b>${fmt0(cost)} €</b><em>selon les prix saisis</em></div>`;
+  const all=S.rows.length,allMiss=S.rows.filter(r=>calc(r).missing.length).length,done=all-allMiss,pct=all?done/all*100:0;
+  $("kpis").innerHTML=`
+   <div class="kpi hero"><small>Carburant / mois</small><b>${fmt0(L)}<span>litres</span></b><em>Plafond hebdo <strong>${fmt0(hL)} L</strong> · coût estimé <strong>${fmt0(cost)} €</strong> / mois</em></div>
+   <div class="kpi volt"><small>Électricité / mois</small><b>${fmt0(K)}<span>kWh</span></b><em>Plafond hebdo <strong>${fmt0(hK)} kWh</strong></em></div>
+   <div class="kpi"><small>Distance / mois</small><b>${fmt0(km)}<span>km</span></b><em>${plural(list.length,"collaborateur")}</em></div>
+   <div class="kpi"><small>Fiches complètes</small><b>${done}<span>/ ${all}</span></b><div class="prog" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
+     ${allMiss?`<button class="go" type="button" id="goComplete">Compléter ${plural(allMiss,"fiche")} ${I.arrow}</button>`:`<em>Tous les calculs sont complets</em>`}</div>`;
+  const g=$("goComplete");if(g)g.onclick=startCompletion;
 }
-function renderRows(){
-  const list=filtered();
-  renderTiles(list);
-  $("cCollab").textContent=S.rows.length;$("cVeh").textContent=S.vehicles.length;$("cSites").textContent=S.sites.length;
-  if(!list.length){$("rows").innerHTML=`<tr><td colspan="12" class="empty">${S.rows.length?"Aucun collaborateur ne correspond aux filtres.":"Aucun collaborateur. Importez votre fichier ou ajoutez-en un."}</td></tr>`;$("foot").innerHTML="";return}
-  $("rows").innerHTML=list.map(r=>{
-    const c=calc(r),u=c.elec?"kWh":"L",cls=c.elec?"voltc":"fuelc";
-    const status=c.missing.length?`<span class="pill warn" title="Manque : ${esc(c.missing.join(", "))}">À compléter</span>`:(c.elec?`<span class="pill elec">Électrique</span>`:`<span class="pill ok">Complet</span>`);
+
+/* ---------- rendu : graphique ---------- */
+function renderChart(){
+  const list=rowsFor({ignoreSite:true});
+  const agg=new Map();
+  list.forEach(r=>{const c=calc(r);const k=r.site||"(sans magasin)";if(!agg.has(k))agg.set(k,{n:0,L:0,K:0,km:0});const o=agg.get(k);o.n++;o.km+=c.kmMois;c.elec?o.K+=c.besoin:o.L+=c.besoin});
+  const m=UI.metric,unit={L:"L",K:"kWh",km:"km"}[m];
+  let items=[...agg.entries()].map(([site,o])=>({site,...o,v:o[m]})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const total=items.reduce((s,x)=>s+x.v,0);
+  const max=items.length?items[0].v:0;
+  const shown=UI.chartAll?items:items.slice(0,8);
+  if(UI.site&&!shown.find(x=>x.site===UI.site)){const sel=items.find(x=>x.site===UI.site);if(sel)shown.push(sel)}
+  $("chartTitle").textContent={L:"Carburant par magasin",K:"Électricité par magasin",km:"Kilomètres par magasin"}[m];
+  const bars=$("bars");bars.className="bars m-"+m+(UI.site?" has-sel":"");
+  bars.innerHTML=shown.length?shown.map(x=>`<button type="button" class="bar-row${x.site===UI.site?" sel":""}" data-site="${esc(x.site)}" aria-pressed="${x.site===UI.site}">
+     <span class="bl">${esc(x.site)}<small>${x.n}</small></span><span class="track"><i style="width:${max?x.v/max*100:0}%"></i></span><span class="bv">${fmt0(x.v)}<span>${unit}</span></span></button>`).join("")
+   :`<div class="empty"><span>${m==="K"?"Aucun véhicule électrique dans la sélection.":"Aucune donnée à afficher."}</span></div>`;
+  $("chartFoot").innerHTML=items.length?`<span>${UI.site?"Cliquez à nouveau sur le magasin pour retirer le filtre.":"Cliquez sur un magasin pour filtrer la liste."} Total ${fmt0(total)} ${unit} · ${plural(items.length,"magasin")}</span>${items.length>8?`<button class="linkbtn" type="button" id="chartAll">${UI.chartAll?"Afficher le top 8":"Afficher les "+items.length+" magasins"}</button>`:""}`:"";
+  const ca=$("chartAll");if(ca)ca.onclick=()=>{UI.chartAll=!UI.chartAll;renderChart()};
+  bars._items=new Map(items.map(x=>[x.site,x]));
+}
+$("metricSeg").addEventListener("click",e=>{const b=e.target.closest("button[data-m]");if(!b)return;UI.metric=b.dataset.m;$("metricSeg").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));renderChart()});
+$("bars").addEventListener("click",e=>{const b=e.target.closest(".bar-row");if(!b)return;UI.site=UI.site===b.dataset.site?"":b.dataset.site;hideTip();selectTab("collab");render()});
+const tip=$("tip");
+function hideTip(){tip.hidden=true}
+$("bars").addEventListener("mousemove",e=>{const b=e.target.closest(".bar-row");if(!b){hideTip();return}const x=$("bars")._items.get(b.dataset.site);if(!x){hideTip();return}
+  tip.innerHTML=`<b>${esc(x.site)}</b>${plural(x.n,"collaborateur")}<br>${fmt0(x.L)} L carburant${x.K?` · ${fmt0(x.K)} kWh`:""}<br>${fmt0(x.km)} km / mois`;
+  tip.hidden=false;const w=tip.offsetWidth,h=tip.offsetHeight;let l=e.clientX+14,t=e.clientY+14;if(l+w>innerWidth-8)l=e.clientX-w-14;if(t+h>innerHeight-8)t=e.clientY-h-14;tip.style.left=l+"px";tip.style.top=t+"px"});
+$("bars").addEventListener("mouseleave",hideTip);
+
+/* ---------- rendu : liste ---------- */
+const mq=window.matchMedia("(max-width: 760px)");
+mq.addEventListener?mq.addEventListener("change",()=>renderList()):mq.addListener(()=>renderList());
+function renderChips(){
+  const base=rowsFor({ignoreStatus:true});
+  let miss=0,ok=0,el=0;base.forEach(r=>{const c=calc(r);c.missing.length?miss++:ok++;if(c.elec)el++});
+  const chips=[["","Tous",base.length,null],["missing","À compléter",miss,"var(--warn)"],["ok","Complets",ok,"var(--ok)"],["elec","Électriques",el,"var(--volt-bar)"]];
+  $("chips").innerHTML=chips.map(([v,l,n,col])=>`<button class="chip" type="button" data-status="${v}" aria-pressed="${UI.status===v}">${col?`<span class="dot" style="background:${col}"></span>`:""}${l} <span class="n">${n}</span></button>`).join("");
+}
+$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;UI.status=b.dataset.status;render()});
+function statusPill(c,short){return c.missing.length?`<span class="pill warn" title="Manque : ${esc(c.missing.map(m=>m[1]).join(", "))}">${I.alert}${short?c.missing.length:c.missing.length+" manquant"+(c.missing.length>1?"s":"")}</span>`:`<span class="pill ok" title="Calcul complet">${I.check}${short?"":"Complet"}</span>`}
+function renderList(){
+  const list=sorted(rowsFor());
+  const box=$("list");
+  if(!list.length){box.innerHTML=`<div class="tablebox"><div class="empty">${S.rows.length?`<b>Aucun collaborateur ne correspond.</b><span>Modifiez la recherche ou les filtres.</span><button class="btn small" type="button" id="emptyClear">Tout afficher</button>`:`<b>Aucun collaborateur pour l'instant.</b><span>Importez votre fichier Excel ou ajoutez un premier collaborateur.</span><button class="btn small primary" type="button" id="emptyImport">Importer Excel</button>`}</div></div>`;
+    const a=$("emptyClear");if(a)a.onclick=clearFilters;const b=$("emptyImport");if(b)b.onclick=()=>$("fileInput").click();return}
+  let maxL=0,maxK=0;list.forEach(r=>{const c=calc(r);c.elec?maxK=Math.max(maxK,c.besoin):maxL=Math.max(maxL,c.besoin)});
+  if(mq.matches){
+    box.innerHTML=`<div class="cards">${list.map(r=>{const c=calc(r),u=c.elec?"kWh":"L";return `<button class="ccard" type="button" data-id="${r.id}">
+      <div class="top"><div style="min-width:0"><div class="who">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub">${esc(r.metier||"")}${r.ville?" · "+esc(r.ville):""}</div></div>${statusPill(c)}</div>
+      <div class="sub">${esc(r.site||"Sans magasin")} · ${esc(r.vehicule||"Sans véhicule")}${c.elec?'<span class="tag">ÉLEC</span>':""}</div>
+      <div class="figs"><div><small>Besoin / mois</small><b class="${c.elec?"v":"f"}">${fmt(c.besoin,1)}<span class="unit">${u}</span></b></div><div><small>Plafond hebdo</small><b>${fmt(c.hebdo,1)}<span class="unit">${u}</span></b></div><div><small>Par jour</small><b>${c.ratio!=null?fmt(c.ratio,1):"—"}<span class="unit">${u}</span></b></div></div></button>`}).join("")}</div>`;
+    return;
+  }
+  const th=(k,l,n)=>`<th class="${n?"n":""}"${UI.sort.key===k?` aria-sort="${UI.sort.dir>0?"ascending":"descending"}"`:""}><button class="sort" type="button" data-sort="${k}">${l}${I.sort}</button></th>`;
+  let tL=0,tK=0,tKm=0,tH=0;
+  const body=list.map(r=>{const c=calc(r),u=c.elec?"kWh":"L";tKm+=c.kmMois;if(c.elec)tK+=c.besoin;else{tL+=c.besoin;tH+=c.hebdo}
+    const mx=c.elec?maxK:maxL;
     return `<tr class="row" data-id="${r.id}" tabindex="0">
-     <td><div class="who">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub">${esc(r.metier||"")}${r.matricule?" · "+esc(r.matricule):""}</div></td>
-     <td><div>${esc(r.ville||"—")}</div><div class="sub">${esc(r.cp||"")}</div></td>
-     <td>${esc(r.site||"—")}</td>
-     <td><div>${esc(r.vehicule||"—")}</div><div class="sub">${c.c!=null?fmt(c.c,2)+(c.elec?" kWh":" L")+"/100 km":""}</div></td>
-     <td class="n">${c.d!=null?fmt(c.d,1)+'<span class="unit">km</span>':"—"}</td>
-     <td class="n">${c.j??"—"}</td>
-     <td class="n">${c.t!=null?fmt0(c.t)+'<span class="unit">km</span>':"—"}</td>
+     <td><div class="who clip">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub clip">${esc(r.metier||"—")}${r.ville?" · "+esc(r.ville):""}</div></td>
+     <td><div class="clip" title="${esc(r.site)}">${esc(r.site||"—")}</div><div class="sub clip">${esc(r.vehicule||"Sans véhicule")}${c.elec?'<span class="tag">ÉLEC</span>':""}</div></td>
+     <td class="n">${c.d==null&&c.t==null?'<span class="miss">—</span>':`<div>${fmt(c.kmJour,1)}<span class="unit">km</span></div><div class="sub">${c.d==null?'<span class="miss">?</span>':fmt(c.d,1)} × 2 + ${c.t==null?'<span class="miss">?</span>':fmt0(c.t)}</div>`}</td>
+     <td class="n">${c.j?c.j+'<span class="unit">j</span>':'<span class="miss">—</span>'}</td>
      <td class="n">${fmt0(c.kmMois)}<span class="unit">km</span></td>
-     <td class="n calc ${cls}">${fmt(c.besoin,1)}<span class="unit">${u}</span></td>
+     <td class="n"><span class="big">${fmt(c.besoin,1)}</span><span class="unit">${u}</span><div class="mbar${c.elec?" v":""}"><i style="width:${mx?c.besoin/mx*100:0}%"></i></div></td>
      <td class="n">${fmt(c.hebdo,1)}<span class="unit">${u}</span></td>
      <td class="n">${c.ratio!=null?fmt(c.ratio,1)+'<span class="unit">'+u+'</span>':"—"}</td>
-     <td>${status}</td></tr>`}).join("");
-  let km=0,L=0,K=0;list.forEach(r=>{const c=calc(r);km+=c.kmMois;c.elec?K+=c.besoin:L+=c.besoin});
-  $("foot").innerHTML=`<tr><td colspan="7">Total (${list.length})</td><td class="n">${fmt0(km)}<span class="unit">km</span></td><td class="n">${fmt0(L)}<span class="unit">L</span>${K?`<div class="sub">${fmt0(K)} kWh</div>`:""}</td><td class="n">${fmt0(L/(numOrNull(S.params.sem)||4.33))}<span class="unit">L</span></td><td></td><td></td></tr>`;
+     <td>${statusPill(c,true)}</td></tr>`}).join("");
+  box.innerHTML=`<div class="tablebox"><table><thead><tr>${th("nom","Collaborateur")}${th("site","Magasin · véhicule")}${th("kmJour","Km / jour",1)}${th("jours","Jours",1)}${th("kmMois","Km / mois",1)}${th("besoin","Besoin / mois",1)}${th("hebdo","Plafond hebdo",1)}${th("ratio","Par jour",1)}${th("status","Statut")}</tr></thead>
+   <tbody>${body}</tbody>
+   <tfoot><tr><td colspan="4">Total · ${plural(list.length,"collaborateur")}</td><td class="n">${fmt0(tKm)}<span class="unit">km</span></td><td class="n">${fmt0(tL)}<span class="unit">L</span>${tK?`<div class="sub">+ ${fmt0(tK)} kWh</div>`:""}</td><td class="n">${fmt0(tH)}<span class="unit">L</span></td><td></td><td></td></tr></tfoot></table></div>`;
 }
-function renderSiteFilter(){
-  const cur=$("fSite").value;
+$("list").addEventListener("click",e=>{
+  const s=e.target.closest("button.sort");if(s){const k=s.dataset.sort;UI.sort=UI.sort.key===k?{key:k,dir:-UI.sort.dir}:{key:k,dir:["nom","site"].includes(k)?1:-1};renderList();return}
+  const tr=e.target.closest("[data-id]");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r,{nav:sorted(rowsFor()).map(x=>x.id)});
+});
+$("list").addEventListener("keydown",e=>{if(e.key!=="Enter")return;const tr=e.target.closest("tr.row");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r,{nav:sorted(rowsFor()).map(x=>x.id)})});
+
+function renderSiteSelect(){
   const names=[...new Set([...S.sites.map(s=>s.nom),...S.rows.map(r=>r.site).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"fr"));
-  $("fSite").innerHTML=`<option value="">Tous les magasins</option>`+names.map(n=>`<option${n===cur?" selected":""}>${esc(n)}</option>`).join("");
+  $("fSite").innerHTML=`<option value="">Tous les magasins</option>`+names.map(n=>`<option${n===UI.site?" selected":""}>${esc(n)}</option>`).join("");
 }
-function countBy(field,val){return S.rows.filter(r=>r[field]===val).length}
+$("fSite").addEventListener("change",e=>{UI.site=e.target.value;render()});
+$("q").addEventListener("input",e=>{UI.q=e.target.value;render()});
+
+/* ---------- rendu : référentiels ---------- */
+function countBy(f,v){return S.rows.filter(r=>r[f]===v).length}
 function renderVeh(){
-  $("vehRows").innerHTML=S.vehicles.map(v=>`<tr data-id="${v.id}">
+  $("vehRows").innerHTML=S.vehicles.map(v=>{const n=countBy("vehicule",v.nom);return `<tr data-id="${v.id}">
    <td><input data-k="nom" value="${esc(v.nom)}" aria-label="Type de véhicule"></td>
-   <td class="n"><input class="n" data-k="conso" type="number" step="0.01" value="${v.conso??""}" aria-label="Consommation"></td>
-   <td><select data-k="energie" aria-label="Énergie"><option value="thermique"${v.energie!=="electrique"?" selected":""}>Thermique (L)</option><option value="electrique"${v.energie==="electrique"?" selected":""}>Électrique (kWh)</option></select></td>
-   <td class="n">${countBy("vehicule",v.nom)}</td>
-   <td><button class="iconbtn" data-del="${v.id}" type="button" aria-label="Supprimer">✕</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">Aucun véhicule.</td></tr>`;
+   <td><select data-k="energie" aria-label="Énergie"><option value="thermique"${v.energie!=="electrique"?" selected":""}>Thermique</option><option value="electrique"${v.energie==="electrique"?" selected":""}>Électrique</option></select></td>
+   <td class="n"><div class="unitcell"><input data-k="conso" inputmode="decimal" value="${v.conso??""}" aria-label="Consommation"><span class="unit">${v.energie==="electrique"?"kWh":"L"}</span></div></td>
+   <td class="n"><button class="countbtn" type="button" data-veh="${esc(v.nom)}"${n?"":" disabled"}>${n}</button></td>
+   <td style="width:44px"><button class="iconbtn" data-del="${v.id}" type="button" aria-label="Supprimer ${esc(v.nom)}">${I.trash}</button></td></tr>`}).join("")||`<tr><td colspan="5"><div class="empty">Aucun véhicule.</div></td></tr>`;
 }
 function renderSites(){
-  $("siteRows").innerHTML=S.sites.map(s=>`<tr data-id="${s.id}">
+  const q=UI.qSite.trim().toLowerCase();
+  const need=new Map();S.rows.forEach(r=>{const c=calc(r);if(!c.elec)need.set(r.site,(need.get(r.site)||0)+c.besoin)});
+  const list=S.sites.filter(s=>!q||s.nom.toLowerCase().includes(q)||(s.adresse||"").toLowerCase().includes(q));
+  $("siteRows").innerHTML=list.map(s=>{const n=countBy("site",s.nom);return `<tr data-id="${s.id}">
    <td><input data-k="nom" value="${esc(s.nom)}" aria-label="Magasin"></td>
-   <td><input data-k="adresse" value="${esc(s.adresse||"")}" placeholder="ex. 12 rue …, 93100 Montreuil" aria-label="Adresse du magasin"></td>
-   <td class="n"><input class="n" data-k="tournee" type="number" step="1" value="${s.tournee??""}" aria-label="Tournée km par jour"></td>
-   <td class="n">${countBy("site",s.nom)}</td>
-   <td><button class="iconbtn" data-del="${s.id}" type="button" aria-label="Supprimer">✕</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">Aucun magasin.</td></tr>`;
+   <td><input data-k="adresse" value="${esc(s.adresse||"")}" placeholder="Ajouter l'adresse…" aria-label="Adresse du magasin"></td>
+   <td class="n"><div class="unitcell"><input data-k="tournee" inputmode="decimal" value="${s.tournee??""}" aria-label="Tournée km par jour"><span class="unit">km</span></div></td>
+   <td class="n"><button class="countbtn" type="button" data-site="${esc(s.nom)}"${n?"":" disabled"}>${n}</button></td>
+   <td class="n">${need.get(s.nom)?fmt0(need.get(s.nom))+'<span class="unit">L</span>':'<span class="sub">—</span>'}</td>
+   <td style="width:44px"><button class="iconbtn" data-del="${s.id}" type="button" aria-label="Supprimer ${esc(s.nom)}">${I.trash}</button></td></tr>`}).join("")||`<tr><td colspan="6"><div class="empty">Aucun magasin ne correspond.</div></td></tr>`;
 }
-function renderParams(){
-  $("pSem").value=S.params.sem;$("pPrixL").value=S.params.prixL;$("pPrixK").value=S.params.prixK;
-  const s=fmt(numOrNull(S.params.sem)||4.33,2);$("fS").textContent=s;$("fS2").textContent=s;
-}
-function renderAll(){renderNotice();renderParams();renderSiteFilter();renderRows();renderVeh();renderSites()}
-
-/* ---------- onglets ---------- */
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===b?"true":"false"));
-  document.querySelectorAll(".panel").forEach(p=>{const on=p.id==="tab-"+b.dataset.tab;p.hidden=!on;if(on&&p.id!=="tab-methode")p.style.display="flex"});
-  if(b.dataset.tab==="veh")renderVeh();if(b.dataset.tab==="sites")renderSites();
-});
-
-/* ---------- paramètres ---------- */
-[["pSem","sem"],["pPrixL","prixL"],["pPrixK","prixK"]].forEach(([id,k])=>$(id).addEventListener("input",e=>{S.params[k]=numOrNull(e.target.value)??"";save();const s=fmt(numOrNull(S.params.sem)||4.33,2);$("fS").textContent=s;$("fS2").textContent=s;renderRows()}));
-$("q").addEventListener("input",renderRows);$("fSite").addEventListener("change",renderRows);$("fStatus").addEventListener("change",renderRows);
-
-/* ---------- tables de référence ---------- */
+$("qSite").addEventListener("input",e=>{UI.qSite=e.target.value;renderSites()});
 function bindRef(tbodyId,arr,field){
   const tb=$(tbodyId);
   tb.addEventListener("change",e=>{
     const tr=e.target.closest("tr");if(!tr)return;const item=S[arr].find(x=>x.id===tr.dataset.id);if(!item)return;
-    const k=e.target.dataset.k;if(!k)return;
-    let v=e.target.value;
+    const k=e.target.dataset.k;if(!k)return;let v=e.target.value;
     if(k==="conso"||k==="tournee")v=numOrNull(v);
-    if(k==="nom"){v=v.trim();const old=item.nom;if(v&&v!==old)S.rows.forEach(r=>{if(r[field]===old)r[field]=v})}
-    item[k]=v;save();renderSiteFilter();renderRows();
+    if(k==="nom"){v=v.trim();if(!v){e.target.value=item.nom;return}const old=item.nom;if(v!==old){S.rows.forEach(r=>{if(r[field]===old)r[field]=v});if(UI.site===old)UI.site=v}}
+    item[k]=v;save();
+    if(k==="conso"||k==="tournee"){
+      const rf=k==="conso"?"conso":"tournee";
+      const targets=S.rows.filter(r=>r[field]===item.nom&&numOrNull(r[rf])!==v);
+      if(targets.length&&v!=null)toast(`${k==="conso"?"Consommation":"Tournée"} par défaut mise à jour. ${plural(targets.length,"collaborateur")} ${targets.length>1?"ont":"a"} une autre valeur.`,{label:`Appliquer aux ${targets.length}`,action:()=>{const prev=targets.map(r=>[r,r[rf]]);targets.forEach(r=>r[rf]=v);save();render();toast(`${plural(targets.length,"fiche")} mise${targets.length>1?"s":""} à jour.`,{label:"Annuler",action:()=>{prev.forEach(([r,o])=>r[rf]=o);save();render()}})},timeout:9000});
+    }
+    if(k==="energie")renderVeh();
+    render();
   });
   tb.addEventListener("click",e=>{
-    const id=e.target.dataset&&e.target.dataset.del;if(!id)return;
-    S[arr]=S[arr].filter(x=>x.id!==id);save();tbodyId==="vehRows"?renderVeh():renderSites();renderSiteFilter();renderRows();
+    const cb=e.target.closest(".countbtn");
+    if(cb){if(cb.dataset.site!=null){UI.site=cb.dataset.site;UI.q=""}else{UI.site="";UI.q=cb.dataset.veh}$("q").value=UI.q;UI.status="";selectTab("collab");render();return}
+    const del=e.target.closest("[data-del]");if(!del)return;
+    const idx=S[arr].findIndex(x=>x.id===del.dataset.del);if(idx<0)return;const item=S[arr][idx];
+    S[arr].splice(idx,1);save();render();
+    toast(`« ${item.nom} » supprimé.`,{label:"Annuler",action:()=>{S[arr].splice(idx,0,item);save();render()}});
   });
 }
 bindRef("vehRows","vehicles","vehicule");
 bindRef("siteRows","sites","site");
 $("addVeh").onclick=()=>{S.vehicles.push({id:uid(),nom:"Nouveau véhicule",conso:null,energie:"thermique"});save();renderVeh();const ins=$("vehRows").querySelectorAll("tr:last-child input");if(ins[0]){ins[0].focus();ins[0].select()}};
-$("addSite").onclick=()=>{S.sites.push({id:uid(),nom:"Nouveau magasin",adresse:"",tournee:50});save();renderSites();const ins=$("siteRows").querySelectorAll("tr:last-child input");if(ins[0]){ins[0].focus();ins[0].select()}};
+$("addSite").onclick=()=>{UI.qSite="";$("qSite").value="";S.sites.push({id:uid(),nom:"Nouveau magasin",adresse:"",tournee:50});save();renderSites();const ins=$("siteRows").querySelectorAll("tr:last-child input");if(ins[0]){ins[0].focus();ins[0].select()}};
+
+/* ---------- réglages ---------- */
+function renderParams(){
+  ["pSem","pPrixL","pPrixK"].forEach((id,i)=>{const el=$(id);if(document.activeElement!==el){const v=S.params[["sem","prixL","prixK"][i]];el.value=v==null||v===""?"":String(v).replace(".",",")}});
+  document.querySelectorAll(".semv").forEach(el=>el.textContent=fmt(sem(),2));
+}
+[["pSem","sem"],["pPrixL","prixL"],["pPrixK","prixK"]].forEach(([id,k])=>$(id).addEventListener("input",e=>{S.params[k]=numOrNull(e.target.value)??"";save();render()}));
+let resetArmed=false;
+function renderReset(){
+  $("resetBox").innerHTML=resetArmed?`<span>Effacer tous les collaborateurs, véhicules et magasins et revenir aux données d'exemple ?</span><button class="btn small" type="button" id="rNo">Garder mes données</button><button class="btn small danger" type="button" id="rYes">Effacer</button>`
+   :`<button class="btn small danger" type="button" id="rArm">${I.trash}Réinitialiser les données</button>`;
+  if(resetArmed){$("rNo").onclick=()=>{resetArmed=false;renderReset()};$("rYes").onclick=()=>{const prev=S;S=seed();resetArmed=false;save();clearFilters();renderAll();toast("Données réinitialisées.",{label:"Annuler",action:()=>{S=prev;save();renderAll()}})}}
+  else $("rArm").onclick=()=>{resetArmed=true;renderReset()};
+}
+
+/* ---------- onglets ---------- */
+function selectTab(t){
+  UI.tab=t;
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x.dataset.tab===t?"true":"false"));
+  document.querySelectorAll(".panel").forEach(p=>p.hidden=p.id!=="tab-"+t);
+  if(t==="veh")renderVeh();if(t==="sites")renderSites();if(t==="methode"){renderParams();renderReset()}
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>selectTab(b.dataset.tab));
+
+/* ---------- bandeau d'information ---------- */
+function renderNotice(){
+  const n=$("notice");
+  if(lastImport){const li=lastImport;
+    n.innerHTML=`<div class="notice ok"><div class="ic">${I.check}</div><div class="txt"><b>${plural(li.rows,"collaborateur")} importé${li.rows>1?"s":""} depuis « ${esc(li.file)} »</b><span>${li.miss?plural(li.miss,"fiche")+" à compléter":"Tous les calculs sont complets"}${li.newVeh?" · "+plural(li.newVeh,"nouveau véhicule","nouveaux véhicules"):""}${li.newSites?" · "+plural(li.newSites,"nouveau magasin","nouveaux magasins"):""} · la liste précédente a été remplacée</span></div>
+     <div class="acts">${li.miss?`<button class="btn small primary" type="button" id="nComplete">Compléter les fiches</button>`:""}<button class="btn small" type="button" id="nUndo">Annuler l'import</button><button class="iconbtn" type="button" id="nClose" aria-label="Fermer">${I.close}</button></div></div>`;
+    const c=$("nComplete");if(c)c.onclick=startCompletion;
+    $("nUndo").onclick=()=>{S=li.prev;lastImport=null;save();clearFilters();renderAll();toast("Import annulé.")};
+    $("nClose").onclick=()=>{lastImport=null;renderNotice()};return}
+  if(S.example){n.innerHTML=`<div class="notice"><div class="ic">${I.up}</div><div class="txt"><b>Ce sont des données d'exemple</b><span>Les 5 collaborateurs affichés sont fictifs. Importez votre fichier besoin_carburant.xlsx (ou glissez-le sur la page) pour travailler sur vos équipes.</span></div><div class="acts"><button class="btn small primary" type="button" id="nImport">Importer mon fichier</button></div></div>`;$("nImport").onclick=()=>$("fileInput").click();return}
+  n.innerHTML="";
+}
+
+/* ---------- toasts ---------- */
+function toast(msg,{label,action,timeout=5000}={}){
+  const el=document.createElement("div");el.className="toast";el.innerHTML=`<span>${esc(msg)}</span>`;
+  if(label){const b=document.createElement("button");b.type="button";b.textContent=label;b.onclick=()=>{el.remove();action()};el.appendChild(b)}
+  const x=document.createElement("button");x.type="button";x.setAttribute("aria-label","Fermer");x.innerHTML=I.close;x.style.color="inherit";x.style.opacity=".6";x.onclick=()=>el.remove();el.appendChild(x);
+  const host=$("toasts");host.appendChild(el);while(host.children.length>3)host.firstChild.remove();
+  setTimeout(()=>el.remove(),timeout);
+}
 
 /* ---------- fiche collaborateur ---------- */
-let editing=null,isNew=false,confirmDel=false;
-function openDrawer(row,nouveau){
-  editing=row;isNew=!!nouveau;confirmDel=false;
-  const vehOpts=`<option value="">— Choisir —</option>`+S.vehicles.map(v=>`<option${v.nom===row.vehicule?" selected":""}>${esc(v.nom)}</option>`).join("")+(row.vehicule&&!vehOf(row.vehicule)?`<option selected>${esc(row.vehicule)}</option>`:"");
-  const siteOpts=`<option value="">— Choisir —</option>`+S.sites.map(s=>`<option${s.nom===row.site?" selected":""}>${esc(s.nom)}</option>`).join("")+(row.site&&!siteOf(row.site)?`<option selected>${esc(row.site)}</option>`:"");
+let D=null; // {row,isNew,nav,completion}
+function field(id,label,inner,cls=""){return `<div class="field ${cls}" id="f_${id}"><label for="${id}">${label}</label>${inner}</div>`}
+function openDrawer(row,{isNew=false,nav=null,completion=false}={}){
+  const wasOpen=!!D;
+  D={row,isNew,nav,completion};
+  const vehOpts=`<option value="">Choisir un véhicule…</option>`+S.vehicles.map(v=>`<option value="${esc(v.nom)}"${v.nom===row.vehicule?" selected":""}>${esc(v.nom)} · ${v.conso!=null?fmt(v.conso,2):"?"} ${v.energie==="electrique"?"kWh":"L"}</option>`).join("")+(row.vehicule&&!vehOf(row.vehicule)?`<option selected>${esc(row.vehicule)}</option>`:"");
+  const siteOpts=`<option value="">Choisir un magasin…</option>`+S.sites.map(s=>`<option value="${esc(s.nom)}"${s.nom===row.site?" selected":""}>${esc(s.nom)}</option>`).join("")+(row.site&&!siteOf(row.site)?`<option selected>${esc(row.site)}</option>`:"");
+  const pos=nav?nav.indexOf(row.id):-1;
   $("drawerHost").innerHTML=`<div class="scrim" id="scrim"></div>
-  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle">
-   <header><h2 id="dTitle">${isNew?"Nouveau collaborateur":esc(row.nom+" "+row.prenom)}</h2><button class="btn small ghost" id="dClose" type="button">Fermer</button></header>
-   <div class="body">
-    <div id="calcBox"></div>
+  <aside class="drawer${wasOpen?"":" anim"}" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+   <header class="dh">
+    <div class="dh-main"><h2 id="dTitle"></h2><div class="dh-sub" id="dSub"></div></div>
+    <div class="dh-nav">${nav&&pos>=0?`<button class="iconbtn" type="button" id="dPrev" aria-label="Collaborateur précédent"${pos<=0?" disabled":""}>${I.left}</button><span>${pos+1} / ${nav.length}</span><button class="iconbtn" type="button" id="dNext" aria-label="Collaborateur suivant"${pos>=nav.length-1?" disabled":""}>${I.right}</button>`:""}<button class="iconbtn" type="button" id="dClose" aria-label="Fermer">${I.close}</button></div>
+   </header>
+   <div class="dbody" id="dBody">
+    <section id="dResult"></section>
+    <section class="trip" id="dTrip"></section>
+    <div id="dMissing"></div>
+    <fieldset><legend>Trajet domicile → magasin</legend>
+     ${field("e_adresse","Adresse du domicile",`<input id="e_adresse" data-k="adresse" value="${esc(row.adresse)}" placeholder="N° et rue" autocomplete="off">`,"full")}
+     ${field("e_cp","Code postal",`<input id="e_cp" data-k="cp" value="${esc(row.cp)}" inputmode="numeric" autocomplete="off">`)}
+     ${field("e_ville","Ville",`<input id="e_ville" data-k="ville" value="${esc(row.ville)}" autocomplete="off">`)}
+     ${field("e_site","Magasin d'affectation",`<select id="e_site" data-k="site">${siteOpts}</select>`,"full")}
+     ${field("e_distance","Distance domicile → magasin (aller simple)",`<div class="unitbox"><input id="e_distance" data-k="distance" inputmode="decimal" value="${row.distance==null?"":String(row.distance).replace(".",",")}" placeholder="0"><span>km</span></div><a class="btn small maps" id="mapsLink" target="_blank" rel="noopener">${I.map}Mesurer sur Google Maps</a><span class="hint" id="mapsHint"></span>`,"full")}
+    </fieldset>
+    <fieldset><legend>Activité et véhicule</legend>
+     <div class="field full" id="f_e_jours"><span class="lab" id="lJours">Jours travaillés par semaine</span><div class="seg days" role="group" aria-labelledby="lJours" id="e_jours" tabindex="-1">${[1,2,3,4,5,6,7].map(n=>`<button type="button" data-j="${n}" aria-pressed="${numOrNull(row.jours)===n}">${n}</button>`).join("")}</div></div>
+     ${field("e_tournee","Tournée par jour",`<div class="unitbox"><input id="e_tournee" data-k="tournee" inputmode="decimal" value="${row.tournee==null?"":String(row.tournee).replace(".",",")}" placeholder="0"><span>km</span></div><span class="hint">Repris du magasin, modifiable</span>`)}
+     ${field("e_repos","Jour(s) de repos",`<input id="e_repos" data-k="repos" value="${esc(row.repos)}" placeholder="ex. Lundi/Mardi">`)}
+     ${field("e_vehicule","Type de véhicule",`<select id="e_vehicule" data-k="vehicule">${vehOpts}</select>`,"full")}
+     ${field("e_conso","Consommation",`<div class="unitbox"><input id="e_conso" data-k="conso" inputmode="decimal" value="${row.conso==null?"":String(row.conso).replace(".",",")}"><span id="consoUnit">L / 100 km</span></div><span class="hint">Reprise du véhicule, modifiable</span>`)}
+     ${field("e_immat","Immatriculation",`<input id="e_immat" data-k="immat" value="${esc(row.immat)}" autocomplete="off">`)}
+    </fieldset>
     <fieldset><legend>Collaborateur</legend>
-     <div class="field"><label for="e_nom">Nom</label><input id="e_nom" data-k="nom" value="${esc(row.nom)}"></div>
-     <div class="field"><label for="e_prenom">Prénom</label><input id="e_prenom" data-k="prenom" value="${esc(row.prenom)}"></div>
-     <div class="field"><label for="e_matricule">Matricule</label><input id="e_matricule" data-k="matricule" value="${esc(row.matricule)}"></div>
-     <div class="field"><label for="e_metier">Métier</label><input id="e_metier" data-k="metier" value="${esc(row.metier)}" list="metiers"></div>
-     <div class="field full"><label for="e_repos">Jour(s) de repos</label><input id="e_repos" data-k="repos" value="${esc(row.repos)}" placeholder="ex. Lundi/Mardi"></div>
-    </fieldset>
-    <fieldset><legend>Domicile → magasin</legend>
-     <div class="field full"><label for="e_adresse">Adresse</label><input id="e_adresse" data-k="adresse" value="${esc(row.adresse)}" placeholder="N° et rue"></div>
-     <div class="field"><label for="e_cp">Code postal</label><input id="e_cp" data-k="cp" value="${esc(row.cp)}" inputmode="numeric"></div>
-     <div class="field"><label for="e_ville">Ville</label><input id="e_ville" data-k="ville" value="${esc(row.ville)}"></div>
-     <div class="field full"><label for="e_site">Magasin d'affectation</label><select id="e_site" data-k="site">${siteOpts}</select></div>
-     <div class="field full"><label for="e_distance">Distance domicile → magasin (km, aller simple)</label>
-      <div class="inline"><input id="e_distance" data-k="distance" type="number" step="0.1" min="0" value="${row.distance??""}"><a class="btn" id="mapsLink" target="_blank" rel="noopener">Itinéraire Maps ↗</a></div>
-      <span class="hint" id="mapsHint">Ouvrez l'itinéraire, puis reportez ici les km affichés par Google Maps.</span></div>
-    </fieldset>
-    <fieldset><legend>Véhicule et activité</legend>
-     <div class="field full"><label for="e_vehicule">Type de véhicule</label><select id="e_vehicule" data-k="vehicule">${vehOpts}</select></div>
-     <div class="field"><label for="e_conso" id="lConso">Conso /100 km</label><input id="e_conso" data-k="conso" type="number" step="0.01" min="0" value="${row.conso??""}"><span class="hint">Reprise du véhicule, modifiable</span></div>
-     <div class="field"><label for="e_immat">Immatriculation</label><input id="e_immat" data-k="immat" value="${esc(row.immat)}"></div>
-     <div class="field"><label for="e_jours">Jours travaillés / semaine</label><input id="e_jours" data-k="jours" type="number" step="1" min="0" max="7" value="${row.jours??""}"></div>
-     <div class="field"><label for="e_tournee">Tournée km / jour</label><input id="e_tournee" data-k="tournee" type="number" step="1" min="0" value="${row.tournee??""}"><span class="hint">Reprise du magasin, modifiable</span></div>
+     ${field("e_nom","Nom",`<input id="e_nom" data-k="nom" value="${esc(row.nom)}" autocomplete="off">`)}
+     ${field("e_prenom","Prénom",`<input id="e_prenom" data-k="prenom" value="${esc(row.prenom)}" autocomplete="off">`)}
+     ${field("e_matricule","Matricule",`<input id="e_matricule" data-k="matricule" value="${esc(row.matricule)}" autocomplete="off">`)}
+     ${field("e_metier","Métier",`<input id="e_metier" data-k="metier" value="${esc(row.metier)}" list="metiers" autocomplete="off">`)}
     </fieldset>
     <datalist id="metiers">${[...new Set(S.rows.map(r=>r.metier).filter(Boolean))].map(m=>`<option value="${esc(m)}">`).join("")}</datalist>
    </div>
-   <footer id="dFoot"></footer>
+   <footer class="df" id="dFoot"></footer>
   </aside>`;
-  renderDrawerFoot();renderCalc();updateMaps();
+  renderDrawerHead();renderDrawerCalc();renderDrawerFoot();
   $("scrim").onclick=closeDrawer;$("dClose").onclick=closeDrawer;
-  const body=document.querySelector(".drawer .body");
-  body.addEventListener("input",onField);body.addEventListener("change",onField);
-  document.addEventListener("keydown",escClose);
-  setTimeout(()=>{(isNew?$("e_nom"):$("dClose")).focus()},30);
+  const p=$("dPrev"),n=$("dNext");if(p)p.onclick=()=>navTo(-1);if(n)n.onclick=()=>navTo(1);
+  const body=$("dBody");body.addEventListener("input",onField);body.addEventListener("change",onField);
+  $("e_jours").addEventListener("click",e=>{const b=e.target.closest("button[data-j]");if(!b)return;D.row.jours=+b.dataset.j;$("e_jours").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));afterChange()});
+  if(!wasOpen)document.addEventListener("keydown",drawerKeys);
+  setTimeout(()=>{if(isNew)$("e_nom").focus();else if(completion){const c=calc(row);if(c.missing.length)focusField(c.missing[0][0]);else $("dClose").focus()}else $("dClose").focus()},40);
+}
+function drawerKeys(e){if(!D)return;if(e.key==="Escape"){e.preventDefault();closeDrawer()}
+  if(e.altKey&&(e.key==="ArrowRight"||e.key==="ArrowLeft")){e.preventDefault();navTo(e.key==="ArrowRight"?1:-1)}}
+function navTo(step){if(!D||!D.nav)return;const i=D.nav.indexOf(D.row.id)+step;if(i<0||i>=D.nav.length)return;const r=S.rows.find(x=>x.id===D.nav[i]);if(r)openDrawer(r,{nav:D.nav,completion:D.completion});const b=$("dBody");if(b)b.scrollTop=0}
+function closeDrawer(){$("drawerHost").innerHTML="";D=null;document.removeEventListener("keydown",drawerKeys);render()}
+function focusField(id){const el=$(id);if(!el)return;el.scrollIntoView({block:"center",behavior:"smooth"});const t=el.matches("input,select")?el:el.querySelector("button");setTimeout(()=>t&&t.focus({preventScroll:true}),150)}
+function renderDrawerHead(){
+  const r=D.row;$("dTitle").textContent=D.isNew?((r.nom+" "+r.prenom).trim()||"Nouveau collaborateur"):((r.nom+" "+r.prenom).trim()||"Collaborateur");
+  $("dSub").textContent=[r.metier,r.site].filter(Boolean).join(" · ")||"Renseignez le magasin et le véhicule";
+}
+function renderDrawerCalc(){
+  const r=D.row,c=calc(r),u=c.elec?"kWh":"L";
+  $("dResult").className="result"+(c.elec?" elec":"");
+  $("dResult").innerHTML=`<div class="main"><small>Besoin ${c.elec?"électricité":"carburant"} / mois</small><b>${fmt(c.besoin,1)}<span>${u}</span></b><em>${fmt0(c.kmMois)} km par mois</em></div>
+   <div class="side"><div><small>Plafond hebdo</small><b>${fmt(c.hebdo,1)} ${u}</b></div><div><small>Par jour travaillé</small><b>${c.ratio!=null?fmt(c.ratio,1)+" "+u:"—"}</b></div></div>
+   ${D.completion&&!c.missing.length?`<div class="done">${I.check}Fiche complète</div>`:""}`;
+  const tot=c.kmJour||0;
+  $("dTrip").className="trip"+(c.elec?" elec":"");
+  $("dTrip").innerHTML=`<h3>Une journée de travail <span>${fmt(tot,1)} km</span></h3>
+   ${tot?`<div class="tripbar" aria-hidden="true"><i style="flex:${c.d||0}"></i><i style="flex:${c.d||0}"></i><i class="t" style="flex:${c.t||0}"></i></div>`:`<div class="tripbar"><i style="flex:1;background:var(--sunk);border-radius:4px"></i></div>`}
+   <div class="tripleg"><span>Aller ${fmt(c.d||0,1)} km</span><span>Retour ${fmt(c.d||0,1)} km</span><span class="t">Tournée ${fmt0(c.t||0)} km</span></div>
+   <div class="formula">${fmt(tot,1)} km × ${c.j||0} j × ${fmt(c.sem,2)} sem. × ${fmt(c.c||0,2)} ${u}/100 km = ${fmt(c.besoin,1)} ${u}</div>`;
+  $("dMissing").innerHTML=c.missing.length?`<div class="missing">${I.alert}Pour finir le calcul : ${c.missing.map(([id,l])=>`<button type="button" data-focus="${id}">${l}</button>`).join("")}</div>`:"";
+  $("dMissing").querySelectorAll("[data-focus]").forEach(b=>b.onclick=()=>focusField(b.dataset.focus));
+  document.querySelectorAll(".drawer .field.need").forEach(f=>f.classList.remove("need"));
+  if(!D.isNew)c.missing.forEach(([id])=>{const f=$("f_"+id);if(f)f.classList.add("need")});
+  const cu=$("consoUnit");if(cu)cu.textContent=(c.elec?"kWh":"L")+" / 100 km";
+  const a=$("mapsLink"),u2=mapsUrl(r);
+  if(a){if(u2){a.href=u2;a.removeAttribute("aria-disabled");$("mapsHint").textContent="Ouvre l'itinéraire en voiture ; reportez ensuite les km ci-dessus."}
+   else{a.removeAttribute("href");a.setAttribute("aria-disabled","true");$("mapsHint").textContent="Renseignez l'adresse (ou au moins le code postal et la ville) et le magasin."}}
 }
 function renderDrawerFoot(){
-  const f=$("dFoot");if(!f)return;
-  if(isNew){f.innerHTML=`<button class="btn ghost" id="dCancel" type="button">Annuler</button><button class="btn primary" id="dSave" type="button">Ajouter</button>`;
-    $("dCancel").onclick=()=>{editing=null;closeDrawer()};
-    $("dSave").onclick=()=>{S.rows.unshift(editing);save();editing=null;closeDrawer();renderAll()};return}
-  if(confirmDel){f.innerHTML=`<div class="confirmbar"><span>Supprimer ce collaborateur ?</span><button class="btn small" id="dNo" type="button">Non</button><button class="btn small" style="color:var(--warn)" id="dYes" type="button">Supprimer</button></div>`;
-    $("dNo").onclick=()=>{confirmDel=false;renderDrawerFoot()};$("dYes").onclick=()=>{S.rows=S.rows.filter(x=>x!==editing);save();closeDrawer();renderAll()};return}
-  f.innerHTML=`<button class="btn ghost" id="dDel" type="button" style="color:var(--warn)">Supprimer</button><button class="btn primary" id="dDone" type="button">Terminé</button>`;
-  $("dDel").onclick=()=>{confirmDel=true;renderDrawerFoot()};$("dDone").onclick=closeDrawer;
+  const f=$("dFoot");
+  if(D.isNew){f.innerHTML=`<button class="btn ghost" type="button" id="dCancel">Annuler</button><button class="btn primary" type="button" id="dSave">${I.plus}Ajouter le collaborateur</button>`;
+    $("dCancel").onclick=closeDrawer;
+    $("dSave").onclick=()=>{const r=D.row;if(!(r.nom||r.prenom).trim()){focusField("e_nom");$("f_e_nom").classList.add("need");return}S.rows.unshift(r);save();closeDrawer();toast(`${(r.nom+" "+r.prenom).trim()} ajouté.`)};return}
+  const pos=D.nav?D.nav.indexOf(D.row.id):-1;const hasNext=D.nav&&pos>=0&&pos<D.nav.length-1;
+  f.innerHTML=`<button class="btn ghost danger" type="button" id="dDel">${I.trash}Supprimer</button><div class="r">${hasNext?`<button class="btn${D.completion?" primary":""}" type="button" id="dNextB">Suivant ${I.arrow}</button>`:""}<button class="btn${D.completion&&hasNext?"":" primary"}" type="button" id="dDone">Terminé</button></div>`;
+  $("dDone").onclick=closeDrawer;const nb=$("dNextB");if(nb)nb.onclick=()=>navTo(1);
+  $("dDel").onclick=()=>{const r=D.row,idx=S.rows.indexOf(r);if(idx<0)return;
+    const nav=D.nav,next=nav?nav[nav.indexOf(r.id)+1]||nav[nav.indexOf(r.id)-1]:null;
+    S.rows.splice(idx,1);save();
+    if(nav&&next){const nr=S.rows.find(x=>x.id===next);const nn=nav.filter(x=>x!==r.id);if(nr)openDrawer(nr,{nav:nn,completion:D.completion});else closeDrawer()}else closeDrawer();
+    render();
+    toast(`${(r.nom+" "+r.prenom).trim()||"Collaborateur"} supprimé.`,{label:"Annuler",action:()=>{S.rows.splice(idx,0,r);save();render()}});
+  };
 }
-function escClose(e){if(e.key==="Escape")closeDrawer()}
-function closeDrawer(){$("drawerHost").innerHTML="";document.removeEventListener("keydown",escClose);renderSiteFilter();renderRows()}
 function onField(e){
-  const k=e.target.dataset.k;if(!k||!editing)return;
+  const k=e.target.dataset.k;if(!k||!D)return;
   let v=e.target.value;
-  if(["distance","jours","tournee","conso"].includes(k))v=numOrNull(v);
-  editing[k]=v;
-  if(k==="vehicule"&&e.type==="change"){const veh=vehOf(v);if(veh&&veh.conso!=null){editing.conso=veh.conso;$("e_conso").value=veh.conso}}
-  if(k==="site"&&e.type==="change"){const s=siteOf(v);if(s&&s.tournee!=null){editing.tournee=s.tournee;$("e_tournee").value=s.tournee}}
-  if(!isNew){save();renderRows()}
-  renderCalc();updateMaps();
-  if(k==="nom"||k==="prenom"){if(!isNew)$("dTitle").textContent=(editing.nom+" "+editing.prenom).trim()||"Collaborateur"}
+  if(["distance","tournee","conso"].includes(k))v=numOrNull(v);
+  D.row[k]=v;
+  if(k==="vehicule"&&e.type==="change"){const veh=vehOf(v);if(veh&&veh.conso!=null){D.row.conso=veh.conso;$("e_conso").value=String(veh.conso).replace(".",",")}}
+  if(k==="site"&&e.type==="change"){const s=siteOf(v);if(s&&s.tournee!=null){D.row.tournee=s.tournee;$("e_tournee").value=String(s.tournee).replace(".",",")}}
+  afterChange();
 }
-function updateMaps(){
-  const a=$("mapsLink");if(!a)return;const u=mapsUrl(editing);
-  if(u){a.href=u;a.removeAttribute("aria-disabled");a.style.opacity="";a.style.pointerEvents="";$("mapsHint").textContent="Ouvrez l'itinéraire, puis reportez ici les km affichés par Google Maps."}
-  else{a.removeAttribute("href");a.setAttribute("aria-disabled","true");a.style.opacity=".5";a.style.pointerEvents="none";$("mapsHint").textContent="Renseignez l'adresse (ou au moins CP et ville) et le magasin pour ouvrir l'itinéraire."}
-  const l=$("lConso");if(l)l.textContent=isElec(editing)?"Conso kWh /100 km":"Conso L /100 km";
+let rT=null;
+function afterChange(){renderDrawerHead();renderDrawerCalc();if(!D.isNew){save();clearTimeout(rT);rT=setTimeout(render,120)}}
+function startCompletion(){
+  UI.status="missing";UI.site="";UI.q="";$("q").value="";selectTab("collab");render();
+  const nav=sorted(rowsFor()).map(r=>r.id);if(!nav.length)return;
+  const r=S.rows.find(x=>x.id===nav[0]);openDrawer(r,{nav,completion:true});
 }
-function renderCalc(){
-  const box=$("calcBox");if(!box)return;const c=calc(editing),u=c.elec?"kWh":"L";
-  box.innerHTML=`<div class="calcsheet${c.elec?" elec":""}">
-   <div class="line"><span class="lbl">Km par jour <code>${fmt(c.d||0,1)} × 2 + ${fmt0(c.t||0)}</code></span><span class="val">${fmt(c.kmJour,1)} km</span></div>
-   <div class="line"><span class="lbl">Km par mois <code>× ${c.j||0} j × ${fmt(c.sem,2)}</code></span><span class="val">${fmt(c.kmMois,1)} km</span></div>
-   <div class="line key"><span class="lbl">Besoin ${c.elec?"électricité":"carburant"} / mois <code>× ${fmt(c.c||0,2)} ÷ 100</code></span><span class="val">${fmt(c.besoin,1)} ${u}</span></div>
-   <div class="line"><span class="lbl">Plafond hebdo <code>÷ ${fmt(c.sem,2)}</code></span><span class="val">${fmt(c.hebdo,1)} ${u}</span></div>
-   <div class="line"><span class="lbl">Ratio par jour travaillé <code>÷ ${c.j||0} j</code></span><span class="val">${c.ratio!=null?fmt(c.ratio,1)+" "+u:"—"}</span></div>
-  </div>${c.missing.length?`<div class="missing">Manque : ${esc(c.missing.join(", "))}.</div>`:""}`;
-}
-$("rows").addEventListener("click",e=>{const tr=e.target.closest("tr.row");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r)});
-$("rows").addEventListener("keydown",e=>{if(e.key!=="Enter")return;const tr=e.target.closest("tr.row");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r)});
-$("btnAdd").onclick=()=>{const fs=$("fSite").value;const s=siteOf(fs);openDrawer({id:uid(),nom:"",prenom:"",matricule:"",metier:"Livreur",adresse:"",cp:"",ville:"",site:fs||"",vehicule:"",immat:"",distance:null,jours:5,tournee:s?s.tournee:null,conso:null,repos:""},true)};
+$("btnAdd").onclick=()=>{const s=siteOf(UI.site);openDrawer({id:uid(),nom:"",prenom:"",matricule:"",metier:"Livreur",adresse:"",cp:"",ville:"",site:UI.site||"",vehicule:"",immat:"",distance:null,jours:5,tournee:s?s.tournee:null,conso:null,repos:""},{isNew:true})};
 
 /* ---------- import Excel ---------- */
 const norm=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-const H={nom:["nom"],prenom:["prenom"],matricule:["matricule"],metier:["metier","fonction"],site:["affectation","magasin","site"],vehicule:["type vehicule"],immat:["vehicule","immatriculation"],a1:["adresse ligne 1","adresse"],a2:["adresse ligne 2"],a3:["adresse ligne 3"],cp:["cp","code postal"],ville:["ville"],distance:["distance domicile magasin"],jours:["jours travailles hebdo"],conso:["conso moyenne vehicule"],tournee:["distance parcourue par jour en fonction du site","tournee km jour"],repos:["jour de repos"],actif:["actif non actif"],energie:["energie"]};
+const H={nom:["nom"],prenom:["prenom"],matricule:["matricule"],metier:["metier","fonction"],site:["affectation","magasin","site"],vehicule:["type vehicule"],immat:["vehicule","immatriculation"],a1:["adresse ligne 1","adresse"],a2:["adresse ligne 2"],a3:["adresse ligne 3"],cp:["cp","code postal"],ville:["ville"],distance:["distance domicile magasin"],jours:["jours travailles hebdo"],conso:["conso moyenne vehicule"],tournee:["distance parcourue par jour en fonction du site","tournee km jour"],repos:["jour de repos"],energie:["energie"]};
 const isElecName=n=>/(^|\s)E-|ELECTR|ÉLECTR|\bZOE\b|E-TECH/i.test(n||"");
 function mode(arr){const m=new Map();arr.forEach(v=>m.set(v,(m.get(v)||0)+1));let best=null,bc=0;m.forEach((c,v)=>{if(c>bc){bc=c;best=v}});return best}
 $("btnImport").onclick=()=>$("fileInput").click();
-$("fileInput").addEventListener("change",async e=>{
-  const f=e.target.files[0];e.target.value="";if(!f)return;
-  if(typeof XLSX==="undefined"){showErr("La lecture Excel n'a pas pu se charger. Vérifiez votre connexion et rechargez la page.");return}
+$("fileInput").addEventListener("change",e=>{const f=e.target.files[0];e.target.value="";if(f)handleFile(f)});
+function showErr(m){$("notice").innerHTML=`<div class="notice err"><div class="ic">${I.alert}</div><div class="txt"><b>Import impossible</b><span>${esc(m)}</span></div><div class="acts"><button class="iconbtn" type="button" id="errX" aria-label="Fermer">${I.close}</button></div></div>`;$("errX").onclick=renderNotice}
+async function handleFile(f){
+  if(typeof XLSX==="undefined"){showErr("La lecture des fichiers Excel n'a pas pu se charger. Vérifiez votre connexion puis rechargez la page.");return}
   try{
     const buf=await f.arrayBuffer();
     const wb=XLSX.read(buf,{type:"array"});
@@ -565,6 +854,7 @@ $("fileInput").addEventListener("change",async e=>{
     const get=(row,k)=>{const i=col[k];if(i==null)return null;const v=row[i];return v==null?null:(typeof v==="string"?v.replace(/\s+/g," ").trim():v)};
     const str=v=>v==null?"":String(v).trim();
     const rows=[],vehMap=new Map(S.vehicles.map(v=>[v.nom,{...v}])),siteT=new Map();
+    const vehBefore=vehMap.size;
     for(let i=best.hi+1;i<best.aoa.length;i++){
       const row=best.aoa[i];if(!row)continue;
       const nom=str(get(row,"nom")),prenom=str(get(row,"prenom"));if(!nom&&!prenom)continue;
@@ -576,30 +866,33 @@ $("fileInput").addEventListener("change",async e=>{
       const cpRaw=get(row,"cp");
       rows.push({id:uid(),nom,prenom,matricule:str(get(row,"matricule")),metier:str(get(row,"metier")),
         adresse:[get(row,"a1"),get(row,"a2"),get(row,"a3")].map(str).filter(Boolean).join(", "),
-        cp:cpRaw==null?"":String(cpRaw).trim().padStart(typeof cpRaw==="number"?5:0,"0"),ville:str(get(row,"ville")),
+        cp:cpRaw==null?"":(typeof cpRaw==="number"?String(cpRaw).padStart(5,"0"):String(cpRaw).trim()),ville:str(get(row,"ville")),
         site,vehicule:veh,immat:str(get(row,"immat")),distance:numOrNull(get(row,"distance")),jours:numOrNull(get(row,"jours")),
         tournee:tour,conso:conso!=null?conso:(veh&&vehMap.get(veh)?vehMap.get(veh).conso:null),repos:str(get(row,"repos"))});
     }
-    if(!rows.length){showErr("Aucune ligne collaborateur trouvée sous l'en-tête du fichier.");return}
+    if(!rows.length){showErr("Aucune ligne collaborateur n'a été trouvée sous la ligne d'en-tête.");return}
     const prev=JSON.parse(JSON.stringify(S));
-    const sites=S.sites.map(s=>({...s}));
-    siteT.forEach((ts,name)=>{if(!sites.find(s=>s.nom===name))sites.push({id:uid(),nom:name,adresse:"",tournee:ts.length?mode(ts):50})});
+    const sites=S.sites.map(s=>({...s}));let newSites=0;
+    siteT.forEach((ts,name)=>{if(!sites.find(s=>s.nom===name)){sites.push({id:uid(),nom:name,adresse:"",tournee:ts.length?mode(ts):50});newSites++}});
     sites.sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
     S={...S,example:false,source:f.name,rows,vehicles:[...vehMap.values()].sort((a,b)=>a.nom.localeCompare(b.nom,"fr")),sites};
-    const miss=rows.filter(r=>calc(r).missing.length).length;
-    undo={prev,msg:`${rows.length} collaborateurs importés depuis « ${f.name} ». ${miss?miss+" ont des informations manquantes (filtre « À compléter »).":"Tous les calculs sont complets."} La liste précédente a été remplacée.`};
-    $("fSite").value="";$("q").value="";$("fStatus").value="";
-    save();renderAll();
-  }catch(err){showErr("Le fichier n'a pas pu être lu ("+(err&&err.message||err)+"). Enregistrez-le en .xlsx puis réessayez.")}
-});
-function showErr(m){$("notice").innerHTML=`<div class="notice err"><span>${esc(m)}</span><button class="btn small ghost" type="button" id="errX">OK</button></div>`;$("errX").onclick=renderNotice}
-function flash(m){$("notice").innerHTML=`<div class="notice info"><span>${esc(m)}</span></div>`;clearTimeout(flash.t);flash.t=setTimeout(renderNotice,3500)}
+    lastImport={prev,file:f.name,rows:rows.length,miss:rows.filter(r=>calc(r).missing.length).length,newVeh:vehMap.size-vehBefore,newSites};
+    UI.site="";UI.q="";UI.status="";$("q").value="";
+    save();selectTab("collab");renderAll();
+    window.scrollTo({top:0,behavior:"smooth"});
+  }catch(err){showErr("Le fichier n'a pas pu être lu ("+(err&&err.message||err)+"). Enregistrez-le au format .xlsx puis réessayez.")}
+}
+let dragDepth=0;const hasFiles=e=>e.dataTransfer&&[...(e.dataTransfer.types||[])].includes("Files");
+window.addEventListener("dragenter",e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth++;$("drop").hidden=false});
+window.addEventListener("dragover",e=>{if(hasFiles(e))e.preventDefault()});
+window.addEventListener("dragleave",e=>{if(!hasFiles(e))return;dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)$("drop").hidden=true});
+window.addEventListener("drop",e=>{if(!hasFiles(e))return;e.preventDefault();dragDepth=0;$("drop").hidden=true;const f=e.dataTransfer.files[0];if(f)handleFile(f)});
 
 /* ---------- export ---------- */
 const COLS=["Nom","Prénom","Matricule","Métier","Adresse","CP","Ville","Affectation","Type Véhicule","Véhicule","Énergie","Distance Domicile-Magasin","Jours travaillés hebdo","Conso moyenne Véhicule","Distance parcourue par Jour en fonction du site","Distance Total / Mois","Besoin Carburant  en litres / mois","Unité","Plafond Hebdo Modèle Calcule","Ratio litres / Jour","Jour de repos"];
-function exportRows(){return filtered().map(r=>{const c=calc(r);return {r,c}})}
+function exportRows(){return sorted(rowsFor()).map(r=>({r,c:calc(r)}))}
 function buildWorkbook(){
-  const list=exportRows();const sem=numOrNull(S.params.sem)||4.33;
+  const list=exportRows();const s=sem();
   const ws={};const enc=XLSX.utils.encode_cell;
   COLS.forEach((h,i)=>ws[enc({r:0,c:i})]={t:"s",v:h});
   list.forEach(({r,c},k)=>{
@@ -607,20 +900,19 @@ function buildWorkbook(){
     const put=(i,v)=>{if(v==null||v==="")return;ws[enc({r:R,c:i})]=typeof v==="number"?{t:"n",v}:{t:"s",v:String(v)}};
     put(0,r.nom);put(1,r.prenom);put(2,r.matricule);put(3,r.metier);put(4,r.adresse);put(5,r.cp);put(6,r.ville);put(7,r.site);put(8,r.vehicule);put(9,r.immat);put(10,c.elec?"Électrique":"Thermique");
     put(11,c.d);put(12,c.j);put(13,c.c);put(14,c.t);
-    ws[enc({r:R,c:15})]={t:"n",v:c.kmMois,f:`(L${n}*2+O${n})*M${n}*${sem}`,z:"0.0"};
+    ws[enc({r:R,c:15})]={t:"n",v:c.kmMois,f:`(L${n}*2+O${n})*M${n}*${s}`,z:"0.0"};
     ws[enc({r:R,c:16})]={t:"n",v:c.besoin,f:`(P${n}*N${n})/100`,z:"0.0"};
     put(17,c.elec?"kWh":"L");
-    ws[enc({r:R,c:18})]={t:"n",v:c.hebdo,f:`Q${n}/${sem}`,z:"0.0"};
+    ws[enc({r:R,c:18})]={t:"n",v:c.hebdo,f:`Q${n}/${s}`,z:"0.0"};
     ws[enc({r:R,c:19})]=c.ratio!=null?{t:"n",v:c.ratio,f:`IFERROR(S${n}/M${n},"")`,z:"0.0"}:{t:"s",v:"",f:`IFERROR(S${n}/M${n},"")`};
     put(20,r.repos);
   });
-  ws["!ref"]=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}});
+  const ref=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}});
+  ws["!ref"]=ref;ws["!autofilter"]={ref};
   ws["!cols"]=COLS.map((h,i)=>({wch:i<2?16:Math.min(Math.max(h.length,10),28)}));
-  ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}})};
-  // Feuille synthèse par magasin
   const bySite=new Map();list.forEach(({r,c})=>{const k=r.site||"(sans magasin)";if(!bySite.has(k))bySite.set(k,{n:0,km:0,L:0,K:0});const o=bySite.get(k);o.n++;o.km+=c.kmMois;c.elec?o.K+=c.besoin:o.L+=c.besoin});
   const synth=[["Magasin","Collaborateurs","Km / mois","Carburant L / mois","Électricité kWh / mois","Plafond hebdo carburant (L)"]];
-  [...bySite.entries()].sort((a,b)=>a[0].localeCompare(b[0],"fr")).forEach(([k,o])=>synth.push([k,o.n,+o.km.toFixed(1),+o.L.toFixed(1),+o.K.toFixed(1),+(o.L/sem).toFixed(1)]));
+  [...bySite.entries()].sort((a,b)=>a[0].localeCompare(b[0],"fr")).forEach(([k,o])=>synth.push([k,o.n,+o.km.toFixed(1),+o.L.toFixed(1),+o.K.toFixed(1),+(o.L/s).toFixed(1)]));
   const ws2=XLSX.utils.aoa_to_sheet(synth);ws2["!cols"]=[{wch:36},{wch:14},{wch:12},{wch:18},{wch:20},{wch:24}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Besoin carburant");XLSX.utils.book_append_sheet(wb,ws2,"Synthèse magasins");
   return wb;
@@ -629,24 +921,36 @@ function buildWorkbook(){
 const inArtifact=!!(window.claude&&window.claude.use);
 let downloads=null;
 (async()=>{if(!inArtifact)return;try{downloads=await window.claude.use("downloads")}catch(e){downloads=null}
-  if(!downloads){const b=$("btnExport");b.disabled=true;b.title="L'export de fichier n'est pas disponible ici : utilisez « Copier le tableau » puis collez dans Excel."}})();
+  if(!downloads){const b=$("btnExport");b.disabled=true;b.title="L'export de fichier n'est pas disponible ici : utilisez « Copier » puis collez dans Excel."}})();
 $("btnExport").onclick=async()=>{
-  if(typeof XLSX==="undefined"){showErr("La génération Excel n'a pas pu se charger. Utilisez « Copier le tableau ».");return}
+  if(typeof XLSX==="undefined"){toast("La génération Excel n'a pas pu se charger. Utilisez « Copier ».");return}
   const d=new Date();const name=`besoin_carburant_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.xlsx`;
-  if(!inArtifact){try{XLSX.writeFile(buildWorkbook(),name);flash("Fichier Excel téléchargé : "+name)}catch(err){showErr("L'export n'a pas abouti ("+(err&&err.message||err)+").")}return}
-  if(!downloads){flash("L'export de fichier n'est pas disponible ici. Utilisez « Copier le tableau » puis collez dans Excel.");return}
-  try{
-    await downloads.save({filename:name,data:XLSX.write(buildWorkbook(),{bookType:"xlsx",type:"array"})});flash("Fichier Excel enregistré : "+name)}
-  catch(err){const code=err&&err.code;if(code==="declined")return;if(code==="rate_limited"){flash("Un enregistrement est déjà en cours, réessayez dans un instant.");return}flash("L'export n'a pas abouti. Utilisez « Copier le tableau » puis collez dans Excel.")}
+  const n=rowsFor().length;
+  if(!inArtifact){try{XLSX.writeFile(buildWorkbook(),name);toast(`Excel téléchargé · ${plural(n,"collaborateur")}.`)}catch(err){toast("L'export n'a pas abouti.")}return}
+  if(!downloads){toast("L'export de fichier n'est pas disponible ici. Utilisez « Copier » puis collez dans Excel.");return}
+  try{await downloads.save({filename:name,data:XLSX.write(buildWorkbook(),{bookType:"xlsx",type:"array"})});toast(`Excel enregistré · ${plural(n,"collaborateur")}.`)}
+  catch(err){const code=err&&err.code;if(code==="declined")return;if(code==="rate_limited"){toast("Un enregistrement est déjà en cours, réessayez dans un instant.");return}toast("L'export n'a pas abouti. Utilisez « Copier » puis collez dans Excel.")}
 };
 $("btnCopy").onclick=async()=>{
   const list=exportRows();
   const lines=[COLS.join("\t")].concat(list.map(({r,c})=>[r.nom,r.prenom,r.matricule,r.metier,r.adresse,r.cp,r.ville,r.site,r.vehicule,r.immat,c.elec?"Électrique":"Thermique",c.d??"",c.j??"",c.c??"",c.t??"",fmt(c.kmMois,1),fmt(c.besoin,2),c.elec?"kWh":"L",fmt(c.hebdo,2),c.ratio!=null?fmt(c.ratio,2):"",r.repos].map(v=>typeof v==="number"?String(v).replace(".",","):String(v??"").replace(/[\t\n]/g," ")).join("\t")));
   const text=lines.join("\n");
-  try{await navigator.clipboard.writeText(text);flash(`${list.length} lignes copiées. Collez-les dans Excel (Ctrl+V).`)}
-  catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();flash(ok?`${list.length} lignes copiées.`:"La copie a été refusée par le navigateur.")}
+  try{await navigator.clipboard.writeText(text);toast(`${plural(list.length,"ligne")} copiée${list.length>1?"s":""} · collez dans Excel avec Ctrl+V.`)}
+  catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();toast(ok?`${plural(list.length,"ligne")} copiée${list.length>1?"s":""}.`:"La copie a été refusée par le navigateur.")}
 };
 
+/* ---------- raccourcis ---------- */
+document.addEventListener("keydown",e=>{if(e.key==="/"&&!D&&!e.target.closest("input,select,textarea")){e.preventDefault();selectTab("collab");$("q").focus()}});
+
+/* ---------- rendu global ---------- */
+function render(){
+  $("cCollab").textContent=S.rows.length;$("cVeh").textContent=S.vehicles.length;$("cSites").textContent=S.sites.length;
+  renderScope();renderKpis();renderChart();renderSiteSelect();renderChips();renderList();
+  if(UI.tab==="veh"&&!$("tab-veh").contains(document.activeElement))renderVeh();
+  if(UI.tab==="sites"&&!$("tab-sites").contains(document.activeElement))renderSites();
+  if(UI.tab==="methode")renderParams();
+}
+function renderAll(){renderNotice();render();renderVeh();renderSites();renderParams();renderReset()}
 renderAll();
 })();
 </script>

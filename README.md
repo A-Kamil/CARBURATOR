@@ -20,12 +20,16 @@ Pour les véhicules électriques (par exemple le Citroën ë-Jumpy à 30 kWh/100
 
 ## Fonctionnalités
 
-- **Import Excel** : chargez le fichier collaborateurs dans son format actuel. Les colonnes sont reconnues d'après leur titre : Nom, Prénom, Affectation, Type Véhicule, Adresse Ligne 1-3, CP, Ville, Distance Domicile-Magasin, Jours travaillés hebdo, Conso moyenne Véhicule, Distance parcourue par Jour en fonction du site, Jour de repos. Le fichier est lu dans le navigateur et n'est envoyé nulle part.
-- **Fiche collaborateur** : elle montre le calcul étape par étape. La consommation se remplit d'après le véhicule et la tournée d'après le magasin.
+- **Chiffres clés** : litres de carburant, kWh, km et coût estimé par mois. Ils suivent les filtres appliqués.
+- **Répartition par magasin** : en litres, kWh ou km. Cliquer sur un magasin filtre la liste.
+- **Import Excel** : par bouton ou en glissant le fichier sur la page. Le fichier collaborateurs est accepté dans son format actuel, et le résumé indique les fiches à compléter ainsi que les nouveaux véhicules et magasins. L'import peut être annulé. Le fichier est lu dans le navigateur et n'est envoyé nulle part.
+- **Compléter les fiches** : ce bouton enchaîne les fiches incomplètes l'une après l'autre. Les champs manquants sont surlignés.
+- **Fiche collaborateur** : elle montre le résultat, la journée type (aller, retour, tournée) et la formule appliquée. La consommation se remplit d'après le véhicule et la tournée d'après le magasin.
 - **Itinéraire Google Maps** : un bouton ouvre le trajet entre le domicile et le magasin, pour reporter ensuite la distance en km.
-- **Référentiels modifiables** : types de véhicules (consommation, thermique ou électrique) et magasins (adresse, km de tournée par défaut).
-- **Synthèse** : km, litres, kWh et coût estimé par mois, avec un filtre par magasin et un filtre par statut (complet ou à compléter).
-- **Export Excel** : les formules restent actives dans le fichier exporté, avec un onglet de synthèse par magasin. On peut aussi copier le tableau pour le coller directement dans Excel.
+- **Liste** : recherche (touche `/`), filtres par magasin et par statut, tri par colonne. Sur téléphone, la liste s'affiche en cartes.
+- **Référentiels modifiables** : véhicules et magasins. Quand une valeur par défaut change, on peut l'appliquer à tous les collaborateurs concernés.
+- **Annulation** : une suppression ou un import peut être annulé.
+- **Export Excel** : les formules restent actives dans le fichier exporté, avec un onglet de synthèse par magasin. On peut aussi copier le tableau pour le coller dans Excel.
 
 Les données saisies restent dans le navigateur (`localStorage`). Pour les transmettre, utilisez l'export Excel.
 
