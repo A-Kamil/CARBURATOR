@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Besoin Carburant Collaborateurs</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: outil de travail — barre d'en-tête, bandeau de synthèse, onglets, tableau ; fiche de calcul en panneau latéral */
+:root{
+  --bg:#f2f4f3; --surface:#ffffff; --sunk:#e8ecea; --line:#d3dad7;
+  --ink:#16221f; --muted:#5c6b66;
+  --fuel:#b8660b; --fuel-soft:#fbeedd;
+  --volt:#17708a; --volt-soft:#dcf0f5;
+  --warn:#a63d1f; --warn-soft:#fbe6df;
+  --ok:#2c7a4b; --ok-soft:#e1f2e7;
+  --accent:#1d4f45; --accent-ink:#ffffff;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111816; --surface:#18211e; --sunk:#202b28; --line:#2f3d39;
+  --ink:#e6ece9; --muted:#9aaaa4;
+  --fuel:#f0a24a; --fuel-soft:#3a2a16;
+  --volt:#5cc0da; --volt-soft:#15323a;
+  --warn:#f08a6a; --warn-soft:#3b211a;
+  --ok:#6cc890; --ok-soft:#183324;
+  --accent:#7cc6b4; --accent-ink:#0d1a17;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111816; --surface:#18211e; --sunk:#202b28; --line:#2f3d39;
+  --ink:#e6ece9; --muted:#9aaaa4;
+  --fuel:#f0a24a; --fuel-soft:#3a2a16;
+  --volt:#5cc0da; --volt-soft:#15323a;
+  --warn:#f08a6a; --warn-soft:#3b211a;
+  --ok:#6cc890; --ok-soft:#183324;
+  --accent:#7cc6b4; --accent-ink:#0d1a17;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+.wrap{max-width:1320px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);font-weight:700;letter-spacing:.01em;margin:0;text-wrap:balance}
+h1{font-size:2.1rem;line-height:1}
+h2{font-size:1.45rem}
+h3{font-size:1.15rem}
+.num,td.n,.tile b{font-variant-numeric:tabular-nums}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* En-tête */
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.head p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 12px;border-radius:var(--r);cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.small{padding:5px 9px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn svg{width:15px;height:15px}
+
+/* Bandeaux */
+.notice{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 14px;border-radius:var(--r);background:var(--fuel-soft);color:var(--ink);border:1px solid color-mix(in srgb,var(--fuel) 35%,transparent)}
+.notice.info{background:var(--sunk);border-color:var(--line)}
+.notice.err{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.notice span{flex:1 1 280px;min-width:0}
+
+/* Formule */
+.formula{font-family:var(--f-mono);font-size:12.5px;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:10px 14px;overflow-x:auto;white-space:nowrap;color:var(--muted)}
+.formula b{color:var(--ink);font-weight:500}
+
+/* Synthèse */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tile{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.tile b{font-family:var(--f-display);font-size:1.9rem;font-weight:600;line-height:1.05}
+.tile em{font-style:normal;color:var(--muted);font-size:12px}
+.tile.fuel b{color:var(--fuel)}
+.tile.volt b{color:var(--volt)}
+
+/* Paramètres */
+.params{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-size:13px;color:var(--muted)}
+.params label{display:flex;align-items:center;gap:6px}
+.params input{width:78px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;background:var(--surface);text-align:right}
+
+/* Onglets */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{border:0;background:none;padding:10px 14px;cursor:pointer;font-family:var(--f-display);font-size:1.12rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--fuel)}
+.tab .count{font-family:var(--f-body);font-size:11px;background:var(--sunk);padding:1px 6px;border-radius:9px;margin-left:4px;vertical-align:2px}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar input[type=search],.toolbar select{padding:7px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);min-width:0}
+.toolbar input[type=search]{flex:1 1 220px}
+.toolbar select{flex:0 1 240px}
+.toolbar .spacer{flex:1}
+
+/* Tableaux */
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:var(--sunk);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;padding:8px 10px;white-space:nowrap;border-bottom:1px solid var(--line)}
+th.n,td.n{text-align:right}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr.row{cursor:pointer}
+tbody tr.row:hover td{background:color-mix(in srgb,var(--sunk) 60%,transparent)}
+td .who{font-weight:600}
+td .sub{color:var(--muted);font-size:12px}
+td.calc{font-weight:600}
+td.fuelc{color:var(--fuel)} td.voltc{color:var(--volt)}
+.unit{color:var(--muted);font-weight:400;font-size:11px;margin-left:2px}
+.pill{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.ex{background:var(--sunk);color:var(--muted)}
+.pill.elec{background:var(--volt-soft);color:var(--volt)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+tfoot td{font-weight:700;background:var(--sunk);border-top:1px solid var(--line)}
+
+/* Tableaux de référence éditables */
+.ref input,.ref select{width:100%;padding:5px 7px;border:1px solid transparent;border-radius:4px;background:transparent;min-width:70px}
+.ref input:hover,.ref select:hover{border-color:var(--line)}
+.ref input:focus,.ref select:focus{border-color:var(--accent);background:var(--surface)}
+.ref input.n{text-align:right;max-width:110px}
+.iconbtn{border:0;background:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:4px}
+.iconbtn:hover{color:var(--warn);background:var(--warn-soft)}
+
+/* Méthode */
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.method section{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.method p{margin:0;color:var(--muted);max-width:65ch}
+.method code{font-family:var(--f-mono);font-size:12px;background:var(--sunk);padding:2px 5px;border-radius:3px;color:var(--ink);white-space:normal}
+
+/* Panneau fiche collaborateur */
+.scrim{position:fixed;inset:0;background:rgba(10,18,16,.45);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--bg);z-index:21;display:flex;flex-direction:column;border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.18);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-right:env(safe-area-inset-right,0px)}
+.drawer header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);background:var(--surface)}
+.drawer .body{overflow-y:auto;padding:16px 18px 24px;display:flex;flex-direction:column;gap:16px}
+.drawer footer{display:flex;gap:8px;justify-content:space-between;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface)}
+fieldset{border:0;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+fieldset legend{font-family:var(--f-display);font-size:1.05rem;font-weight:600;margin-bottom:8px;padding:0}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;color:var(--muted);font-weight:600}
+.field input,.field select{padding:7px 9px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);width:100%;min-width:0}
+.field .hint{font-size:11.5px;color:var(--muted)}
+.inline{display:flex;gap:6px;align-items:stretch}
+.inline input{flex:1}
+@media (max-width:440px){fieldset{grid-template-columns:1fr}}
+
+/* Fiche de calcul */
+.calcsheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.calcsheet .line{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);align-items:baseline}
+.calcsheet .line:last-child{border-bottom:0}
+.calcsheet .lbl{color:var(--muted);font-size:12.5px}
+.calcsheet .lbl code{font-family:var(--f-mono);font-size:11.5px;color:var(--ink)}
+.calcsheet .val{font-family:var(--f-display);font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.calcsheet .line.key{background:var(--fuel-soft)}
+.calcsheet .line.key .val{color:var(--fuel);font-size:1.6rem}
+.calcsheet.elec .line.key{background:var(--volt-soft)}
+.calcsheet.elec .line.key .val{color:var(--volt)}
+.missing{font-size:12.5px;color:var(--warn)}
+.confirmbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>Besoin carburant par collaborateur</h1>
+      <p>Domicile, magasin d'affectation, véhicule et kilomètres de tournée : l'outil calcule le besoin mensuel, le plafond hebdomadaire et le ratio par jour travaillé, avec la même méthode que votre fichier Excel.</p>
+    </div>
+    <div class="actions">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+      <button class="btn" id="btnImport" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 0L7 8m5-5l5 5M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>Importer Excel</button>
+      <button class="btn" id="btnCopy" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg>Copier le tableau</button>
+      <button class="btn primary" id="btnExport" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>Exporter Excel</button>
+    </div>
+  </div>
+
+  <div id="notice"></div>
+
+  <div class="formula" aria-label="Méthode de calcul">
+    Km/mois = (<b>distance domicile→magasin</b> × 2 + <b>km tournée/jour</b>) × <b>jours/semaine</b> × <b id="fS">4,33</b> &nbsp;·&nbsp;
+    Besoin/mois = km/mois × <b>conso/100 km</b> ÷ 100 &nbsp;·&nbsp; Plafond hebdo = besoin/mois ÷ <b id="fS2">4,33</b> &nbsp;·&nbsp; Ratio/jour = plafond hebdo ÷ jours
+  </div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <div class="params">
+    <label for="pSem">Semaines par mois <input id="pSem" type="number" step="0.01" min="1"></label>
+    <label for="pPrixL">Prix carburant €/L <input id="pPrixL" type="number" step="0.01" min="0"></label>
+    <label for="pPrixK">Prix électricité €/kWh <input id="pPrixK" type="number" step="0.01" min="0"></label>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" data-tab="collab" aria-selected="true">Collaborateurs <span class="count" id="cCollab"></span></button>
+    <button class="tab" role="tab" data-tab="veh" aria-selected="false">Véhicules <span class="count" id="cVeh"></span></button>
+    <button class="tab" role="tab" data-tab="sites" aria-selected="false">Magasins <span class="count" id="cSites"></span></button>
+    <button class="tab" role="tab" data-tab="methode" aria-selected="false">Méthode</button>
+  </div>
+
+  <!-- Collaborateurs -->
+  <div id="tab-collab" class="panel" style="display:flex;flex-direction:column;gap:12px">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Rechercher un nom, une ville, un matricule…" aria-label="Rechercher">
+      <select id="fSite" aria-label="Filtrer par magasin"></select>
+      <select id="fStatus" aria-label="Filtrer par statut">
+        <option value="">Tous les statuts</option>
+        <option value="ok">Calcul complet</option>
+        <option value="missing">À compléter</option>
+        <option value="elec">Véhicules électriques</option>
+      </select>
+      <button class="btn primary" id="btnAdd" type="button">+ Ajouter un collaborateur</button>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr>
+          <th>Collaborateur</th><th>Domicile</th><th>Magasin</th><th>Véhicule</th>
+          <th class="n">Dom.→mag.</th><th class="n">Jours/sem.</th><th class="n">Tournée/j</th>
+          <th class="n">Km/mois</th><th class="n">Besoin/mois</th><th class="n">Plafond hebdo</th><th class="n">Ratio/jour</th><th>Statut</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot id="foot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Véhicules -->
+  <div id="tab-veh" class="panel" hidden style="flex-direction:column;gap:12px">
+    <div class="notice info"><span>La consommation saisie ici sert de valeur par défaut quand vous attribuez ce véhicule à un collaborateur. Les véhicules électriques sont comptés en kWh/100 km et donnent un besoin en kWh, séparé du carburant.</span></div>
+    <div class="tablebox">
+      <table class="ref">
+        <thead><tr><th>Type de véhicule</th><th class="n">Conso /100 km</th><th>Énergie</th><th class="n">Collaborateurs</th><th></th></tr></thead>
+        <tbody id="vehRows"></tbody>
+      </table>
+    </div>
+    <div><button class="btn" id="addVeh" type="button">+ Ajouter un véhicule</button></div>
+  </div>
+
+  <!-- Magasins -->
+  <div id="tab-sites" class="panel" hidden style="flex-direction:column;gap:12px">
+    <div class="notice info"><span>Le kilométrage de tournée par jour est proposé par défaut pour chaque nouveau collaborateur du magasin (valeur la plus fréquente de votre fichier). L'adresse du magasin rend l'itinéraire Google Maps plus précis.</span></div>
+    <div class="tablebox">
+      <table class="ref">
+        <thead><tr><th>Magasin / site</th><th>Adresse du magasin (pour Maps)</th><th class="n">Tournée km/jour</th><th class="n">Collaborateurs</th><th></th></tr></thead>
+        <tbody id="siteRows"></tbody>
+      </table>
+    </div>
+    <div><button class="btn" id="addSite" type="button">+ Ajouter un magasin</button></div>
+  </div>
+
+  <!-- Méthode -->
+  <div id="tab-methode" class="panel" hidden>
+    <div class="method">
+      <section><h3>1. Kilomètres par jour</h3><p>Aller-retour domicile ↔ magasin, plus la tournée du site.</p><p><code>(Distance Domicile-Magasin × 2) + Distance parcourue par jour</code></p><p>La distance domicile-magasin se mesure sur Google Maps : le bouton « Itinéraire Maps » de la fiche ouvre le trajet avec l'adresse du collaborateur et le magasin déjà remplis.</p></section>
+      <section><h3>2. Distance totale par mois</h3><p>Kilomètres par jour multipliés par le nombre de jours travaillés par semaine, puis par le nombre moyen de semaines dans un mois.</p><p><code>km/jour × Jours travaillés hebdo × 4,33</code></p></section>
+      <section><h3>3. Besoin en litres par mois</h3><p>Distance mensuelle multipliée par la consommation moyenne du véhicule.</p><p><code>Distance Total/Mois × Conso moyenne ÷ 100</code></p><p>Pour un véhicule électrique, le même calcul donne des kWh.</p></section>
+      <section><h3>4. Plafond hebdo et ratio par jour</h3><p>Le plafond hebdomadaire ramène le besoin mensuel à la semaine ; le ratio le répartit sur les jours travaillés.</p><p><code>Plafond = Besoin/mois ÷ 4,33</code><br><code>Ratio = Plafond ÷ Jours travaillés</code></p></section>
+    </div>
+  </div>
+</div>
+
+<div id="drawerHost"></div>
+
+<script>
+(function(){
+"use strict";
+const KEY="besoin-carburant-v1";
+const fmt=(n,d=1)=>n==null||!isFinite(n)?"—":n.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt0=n=>fmt(n,0);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const numOrNull=v=>{if(v===""||v==null)return null;const n=typeof v==="number"?v:parseFloat(String(v).replace(",",".").replace(/\s/g,""));return isFinite(n)?n:null};
+
+const SEED_VEH=[
+ ["CITROEN E-JUMPY",30,"electrique"],["MERCEDES ATEGO 13T500",12.5,"thermique"],["RENAULT CLIO IV",5.2,"thermique"],
+ ["RENAULT EXPRESS VAN",6,"thermique"],["RENAULT MASTER III",10.19,"thermique"],["RENAULT MASTER IV",10.19,"thermique"],
+ ["RENAULT TRAFIC",11.28,"thermique"],["SKODA FABIA BERLINE",5.2,"thermique"],["SKODA FABIA III",5.2,"thermique"],
+ ["SKODA FABIA III SW",7.1,"thermique"],["VOLKSWAGEN CADDY VAN MAXI",7.98,"thermique"]];
+const SEED_SITES=[["Auchan Bagnolet",50],["Auchan Maison Alfort",50],["Auchan Super Paris (BellesFeuilles)",50],["Encadrement EXP IDF Nord",25],["Encadrement EXP IDF Sud",5],["Epic Palais des Congrès",70],["Juste A Temps",100],["Lafayette Gourmet rue Provence",80],["Leclerc Levallois Jaurès",36],["Monoprix Acrcueil La Vache noire",50],["Monoprix Argenteuil",50],["Monoprix Aubervilliers",80],["Monoprix Aulnay sous Bois",50],["Monoprix Beaugrenelle",45],["Monoprix Bondy",50],["Monoprix Boulogne Jaures",50],["Monoprix Bourg La Reine",80],["Monoprix Chaville",50],["Monoprix Colombes",50],["Monoprix Commerce",45],["Monoprix Courbevoie Vinci",50],["Monoprix Crimee",45],["Monoprix Dames",40],["Monoprix Fontenay sous Bois",60],["Monoprix Gambetta",50],["Monoprix Issy Les Moulineaux",50],["Monoprix La Celle St Cloud",62],["Monoprix La Garenne Colombes",50],["Monoprix Le Perreux",80],["Monoprix Le Pre Saint Gervais",50],["Monoprix Le Vesinet",50],["Monoprix Les Huissiers",50],["Monoprix Meudon",50],["Monoprix Montparnasse",45],["Monoprix Montreuil",50],["Monoprix Nation",40],["Monoprix Nogent Sur Marne",50],["Monoprix Parly 2 le Chesnay",70],["Monoprix Passy",70],["Monoprix Pelleport",45],["Monoprix Pont de Suresnes",50],["Monoprix Puteaux",50],["Monoprix Rueil Malmaison",70],["Monoprix Sablons",50],["Monoprix Saint Augustin",40],["Monoprix Saint Cloud",50],["Monoprix Saint Germain des Pres",45],["Monoprix Saint Marcel",45],["Monoprix Saint Maur",90],["Monoprix Saint Ouen",50],["Monoprix Saint Paul",70],["Monoprix Sevres",50],["Monoprix Ternes",45],["Monoprix Toits de Boulogne",50],["Monoprix Versailles",50],["Monoprix Villejuif",80],["Monoprix Vincennes",45],["POIDS LOURD NAVETTE SABLONS",36],["Star'Dom",100],["Super U Montgeron",85],["TP Surref Samedi",50]];
+const SEED_ROWS=[
+ {nom:"Durand",prenom:"Martin",matricule:"EX-001",metier:"Livreur",adresse:"",cp:"93350",ville:"Le Bourget",site:"Monoprix Les Huissiers",vehicule:"RENAULT TRAFIC",immat:"",distance:18,jours:4,tournee:50,conso:11.28,repos:"Lundi/Vendredi"},
+ {nom:"Petit",prenom:"Sarah",matricule:"EX-002",metier:"Livreur",adresse:"",cp:"93100",ville:"Montreuil",site:"Monoprix Montreuil",vehicule:"VOLKSWAGEN CADDY VAN MAXI",immat:"",distance:4.7,jours:4,tournee:50,conso:7.98,repos:"Lundi/Mardi"},
+ {nom:"Moreau",prenom:"Lucas",matricule:"EX-003",metier:"Livreur ELEC",adresse:"",cp:"92130",ville:"Issy-les-Moulineaux",site:"Monoprix Beaugrenelle",vehicule:"CITROEN E-JUMPY",immat:"",distance:6.5,jours:5,tournee:45,conso:30,repos:"Mercredi"},
+ {nom:"Bernard",prenom:"Inès",matricule:"EX-004",metier:"Dispatcheur Zone",adresse:"",cp:"77290",ville:"Mitry-Mory",site:"Monoprix Saint Germain des Pres",vehicule:"VOLKSWAGEN CADDY VAN MAXI",immat:"",distance:38.2,jours:4,tournee:50,conso:7.98,repos:"Mardi/Mercredi"},
+ {nom:"Leroy",prenom:"Hugo",matricule:"EX-005",metier:"Livreur",adresse:"",cp:"78000",ville:"Versailles",site:"Monoprix Versailles",vehicule:"VOLKSWAGEN CADDY VAN MAXI",immat:"",distance:null,jours:5,tournee:50,conso:7.98,repos:"Jeudi"}];
+
+function seed(){
+  return {
+    example:true,source:"",
+    params:{sem:4.33,prixL:1.75,prixK:0.25},
+    vehicles:SEED_VEH.map(([nom,conso,energie])=>({id:uid(),nom,conso,energie})),
+    sites:SEED_SITES.map(([nom,tournee])=>({id:uid(),nom,adresse:"",tournee})),
+    rows:SEED_ROWS.map(r=>({id:uid(),...r}))
+  };
+}
+let S;
+try{const raw=localStorage.getItem(KEY);S=raw?JSON.parse(raw):null}catch(e){S=null}
+if(!S||!Array.isArray(S.rows))S=seed();
+let undo=null;
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}},250)}
+
+const vehOf=name=>S.vehicles.find(v=>v.nom===name);
+const siteOf=name=>S.sites.find(s=>s.nom===name);
+const isElec=r=>(vehOf(r.vehicule)?.energie)==="electrique";
+
+function calc(r){
+  const sem=numOrNull(S.params.sem)||4.33;
+  const d=numOrNull(r.distance),j=numOrNull(r.jours),t=numOrNull(r.tournee),c=numOrNull(r.conso);
+  const missing=[];
+  if(d==null)missing.push("distance domicile→magasin");
+  if(!j)missing.push("jours travaillés");
+  if(t==null)missing.push("km de tournée");
+  if(c==null)missing.push("consommation");
+  if(!r.vehicule)missing.push("véhicule");
+  const kmJour=(d||0)*2+(t||0);
+  const kmMois=kmJour*(j||0)*sem;
+  const besoin=kmMois*(c||0)/100;
+  const hebdo=besoin/sem;
+  const ratio=j?hebdo/j:null;
+  return {d,j,t,c,sem,kmJour,kmMois,besoin,hebdo,ratio,missing,elec:isElec(r)};
+}
+const domicile=r=>[r.adresse,[r.cp,r.ville].filter(Boolean).join(" ")].filter(Boolean).join(", ");
+function mapsUrl(r){
+  const site=siteOf(r.site);
+  const dest=site&&site.adresse?site.adresse:(r.site||"");
+  const o=domicile(r);
+  if(!o||!dest)return null;
+  return "https://www.google.com/maps/dir/?api=1&travelmode=driving&origin="+encodeURIComponent(o)+"&destination="+encodeURIComponent(dest);
+}
+
+/* ---------- rendu ---------- */
+const $=id=>document.getElementById(id);
+function filtered(){
+  const q=$("q").value.trim().toLowerCase();
+  const fs=$("fSite").value, st=$("fStatus").value;
+  return S.rows.filter(r=>{
+    if(fs&&r.site!==fs)return false;
+    if(q){const hay=[r.nom,r.prenom,r.matricule,r.ville,r.cp,r.metier,r.site,r.vehicule,r.immat].join(" ").toLowerCase();if(!hay.includes(q))return false}
+    if(st){const c=calc(r);if(st==="ok"&&c.missing.length)return false;if(st==="missing"&&!c.missing.length)return false;if(st==="elec"&&!c.elec)return false}
+    return true;
+  });
+}
+function renderNotice(){
+  const n=$("notice");
+  if(undo){n.innerHTML=`<div class="notice info"><span>${esc(undo.msg)}</span><button class="btn small" id="undoBtn" type="button">Annuler l'import</button><button class="btn small ghost" id="undoClose" type="button">OK</button></div>`;
+    $("undoBtn").onclick=()=>{S=undo.prev;undo=null;save();renderAll()};$("undoClose").onclick=()=>{undo=null;renderNotice()};return}
+  if(S.example){n.innerHTML=`<div class="notice"><span><b>Données d'exemple.</b> Les 5 collaborateurs affichés sont fictifs. Importez votre fichier Excel (même format que <i>besoin_carburant.xlsx</i>) ou ajoutez vos collaborateurs un par un.</span><button class="btn small primary" id="nImport" type="button">Importer mon fichier</button></div>`;$("nImport").onclick=()=>$("fileInput").click();return}
+  n.innerHTML="";
+}
+function renderTiles(list){
+  let km=0,L=0,K=0,miss=0,hebdoL=0,hebdoK=0;
+  list.forEach(r=>{const c=calc(r);km+=c.kmMois;if(c.elec){K+=c.besoin;hebdoK+=c.hebdo}else{L+=c.besoin;hebdoL+=c.hebdo}if(c.missing.length)miss++});
+  const cost=L*(numOrNull(S.params.prixL)||0)+K*(numOrNull(S.params.prixK)||0);
+  $("tiles").innerHTML=`
+   <div class="tile"><small>Collaborateurs</small><b>${list.length}</b><em>${miss?miss+" à compléter":"tous complets"}</em></div>
+   <div class="tile"><small>Distance / mois</small><b>${fmt0(km)}</b><em>km</em></div>
+   <div class="tile fuel"><small>Carburant / mois</small><b>${fmt0(L)}</b><em>litres · plafond hebdo ${fmt0(hebdoL)} L</em></div>
+   <div class="tile volt"><small>Électricité / mois</small><b>${fmt0(K)}</b><em>kWh · plafond hebdo ${fmt0(hebdoK)} kWh</em></div>
+   <div class="tile"><small>Coût estimé / mois</small><b>${fmt0(cost)} €</b><em>selon les prix saisis</em></div>`;
+}
+function renderRows(){
+  const list=filtered();
+  renderTiles(list);
+  $("cCollab").textContent=S.rows.length;$("cVeh").textContent=S.vehicles.length;$("cSites").textContent=S.sites.length;
+  if(!list.length){$("rows").innerHTML=`<tr><td colspan="12" class="empty">${S.rows.length?"Aucun collaborateur ne correspond aux filtres.":"Aucun collaborateur. Importez votre fichier ou ajoutez-en un."}</td></tr>`;$("foot").innerHTML="";return}
+  $("rows").innerHTML=list.map(r=>{
+    const c=calc(r),u=c.elec?"kWh":"L",cls=c.elec?"voltc":"fuelc";
+    const status=c.missing.length?`<span class="pill warn" title="Manque : ${esc(c.missing.join(", "))}">À compléter</span>`:(c.elec?`<span class="pill elec">Électrique</span>`:`<span class="pill ok">Complet</span>`);
+    return `<tr class="row" data-id="${r.id}" tabindex="0">
+     <td><div class="who">${esc(r.nom)} ${esc(r.prenom)}</div><div class="sub">${esc(r.metier||"")}${r.matricule?" · "+esc(r.matricule):""}</div></td>
+     <td><div>${esc(r.ville||"—")}</div><div class="sub">${esc(r.cp||"")}</div></td>
+     <td>${esc(r.site||"—")}</td>
+     <td><div>${esc(r.vehicule||"—")}</div><div class="sub">${c.c!=null?fmt(c.c,2)+(c.elec?" kWh":" L")+"/100 km":""}</div></td>
+     <td class="n">${c.d!=null?fmt(c.d,1)+'<span class="unit">km</span>':"—"}</td>
+     <td class="n">${c.j??"—"}</td>
+     <td class="n">${c.t!=null?fmt0(c.t)+'<span class="unit">km</span>':"—"}</td>
+     <td class="n">${fmt0(c.kmMois)}<span class="unit">km</span></td>
+     <td class="n calc ${cls}">${fmt(c.besoin,1)}<span class="unit">${u}</span></td>
+     <td class="n">${fmt(c.hebdo,1)}<span class="unit">${u}</span></td>
+     <td class="n">${c.ratio!=null?fmt(c.ratio,1)+'<span class="unit">'+u+'</span>':"—"}</td>
+     <td>${status}</td></tr>`}).join("");
+  let km=0,L=0,K=0;list.forEach(r=>{const c=calc(r);km+=c.kmMois;c.elec?K+=c.besoin:L+=c.besoin});
+  $("foot").innerHTML=`<tr><td colspan="7">Total (${list.length})</td><td class="n">${fmt0(km)}<span class="unit">km</span></td><td class="n">${fmt0(L)}<span class="unit">L</span>${K?`<div class="sub">${fmt0(K)} kWh</div>`:""}</td><td class="n">${fmt0(L/(numOrNull(S.params.sem)||4.33))}<span class="unit">L</span></td><td></td><td></td></tr>`;
+}
+function renderSiteFilter(){
+  const cur=$("fSite").value;
+  const names=[...new Set([...S.sites.map(s=>s.nom),...S.rows.map(r=>r.site).filter(Boolean)])].sort((a,b)=>a.localeCompare(b,"fr"));
+  $("fSite").innerHTML=`<option value="">Tous les magasins</option>`+names.map(n=>`<option${n===cur?" selected":""}>${esc(n)}</option>`).join("");
+}
+function countBy(field,val){return S.rows.filter(r=>r[field]===val).length}
+function renderVeh(){
+  $("vehRows").innerHTML=S.vehicles.map(v=>`<tr data-id="${v.id}">
+   <td><input data-k="nom" value="${esc(v.nom)}" aria-label="Type de véhicule"></td>
+   <td class="n"><input class="n" data-k="conso" type="number" step="0.01" value="${v.conso??""}" aria-label="Consommation"></td>
+   <td><select data-k="energie" aria-label="Énergie"><option value="thermique"${v.energie!=="electrique"?" selected":""}>Thermique (L)</option><option value="electrique"${v.energie==="electrique"?" selected":""}>Électrique (kWh)</option></select></td>
+   <td class="n">${countBy("vehicule",v.nom)}</td>
+   <td><button class="iconbtn" data-del="${v.id}" type="button" aria-label="Supprimer">✕</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">Aucun véhicule.</td></tr>`;
+}
+function renderSites(){
+  $("siteRows").innerHTML=S.sites.map(s=>`<tr data-id="${s.id}">
+   <td><input data-k="nom" value="${esc(s.nom)}" aria-label="Magasin"></td>
+   <td><input data-k="adresse" value="${esc(s.adresse||"")}" placeholder="ex. 12 rue …, 93100 Montreuil" aria-label="Adresse du magasin"></td>
+   <td class="n"><input class="n" data-k="tournee" type="number" step="1" value="${s.tournee??""}" aria-label="Tournée km par jour"></td>
+   <td class="n">${countBy("site",s.nom)}</td>
+   <td><button class="iconbtn" data-del="${s.id}" type="button" aria-label="Supprimer">✕</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">Aucun magasin.</td></tr>`;
+}
+function renderParams(){
+  $("pSem").value=S.params.sem;$("pPrixL").value=S.params.prixL;$("pPrixK").value=S.params.prixK;
+  const s=fmt(numOrNull(S.params.sem)||4.33,2);$("fS").textContent=s;$("fS2").textContent=s;
+}
+function renderAll(){renderNotice();renderParams();renderSiteFilter();renderRows();renderVeh();renderSites()}
+
+/* ---------- onglets ---------- */
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===b?"true":"false"));
+  document.querySelectorAll(".panel").forEach(p=>{const on=p.id==="tab-"+b.dataset.tab;p.hidden=!on;if(on&&p.id!=="tab-methode")p.style.display="flex"});
+  if(b.dataset.tab==="veh")renderVeh();if(b.dataset.tab==="sites")renderSites();
+});
+
+/* ---------- paramètres ---------- */
+[["pSem","sem"],["pPrixL","prixL"],["pPrixK","prixK"]].forEach(([id,k])=>$(id).addEventListener("input",e=>{S.params[k]=numOrNull(e.target.value)??"";save();const s=fmt(numOrNull(S.params.sem)||4.33,2);$("fS").textContent=s;$("fS2").textContent=s;renderRows()}));
+$("q").addEventListener("input",renderRows);$("fSite").addEventListener("change",renderRows);$("fStatus").addEventListener("change",renderRows);
+
+/* ---------- tables de référence ---------- */
+function bindRef(tbodyId,arr,field){
+  const tb=$(tbodyId);
+  tb.addEventListener("change",e=>{
+    const tr=e.target.closest("tr");if(!tr)return;const item=S[arr].find(x=>x.id===tr.dataset.id);if(!item)return;
+    const k=e.target.dataset.k;if(!k)return;
+    let v=e.target.value;
+    if(k==="conso"||k==="tournee")v=numOrNull(v);
+    if(k==="nom"){v=v.trim();const old=item.nom;if(v&&v!==old)S.rows.forEach(r=>{if(r[field]===old)r[field]=v})}
+    item[k]=v;save();renderSiteFilter();renderRows();
+  });
+  tb.addEventListener("click",e=>{
+    const id=e.target.dataset&&e.target.dataset.del;if(!id)return;
+    S[arr]=S[arr].filter(x=>x.id!==id);save();tbodyId==="vehRows"?renderVeh():renderSites();renderSiteFilter();renderRows();
+  });
+}
+bindRef("vehRows","vehicles","vehicule");
+bindRef("siteRows","sites","site");
+$("addVeh").onclick=()=>{S.vehicles.push({id:uid(),nom:"Nouveau véhicule",conso:null,energie:"thermique"});save();renderVeh();const ins=$("vehRows").querySelectorAll("tr:last-child input");if(ins[0]){ins[0].focus();ins[0].select()}};
+$("addSite").onclick=()=>{S.sites.push({id:uid(),nom:"Nouveau magasin",adresse:"",tournee:50});save();renderSites();const ins=$("siteRows").querySelectorAll("tr:last-child input");if(ins[0]){ins[0].focus();ins[0].select()}};
+
+/* ---------- fiche collaborateur ---------- */
+let editing=null,isNew=false,confirmDel=false;
+function openDrawer(row,nouveau){
+  editing=row;isNew=!!nouveau;confirmDel=false;
+  const vehOpts=`<option value="">— Choisir —</option>`+S.vehicles.map(v=>`<option${v.nom===row.vehicule?" selected":""}>${esc(v.nom)}</option>`).join("")+(row.vehicule&&!vehOf(row.vehicule)?`<option selected>${esc(row.vehicule)}</option>`:"");
+  const siteOpts=`<option value="">— Choisir —</option>`+S.sites.map(s=>`<option${s.nom===row.site?" selected":""}>${esc(s.nom)}</option>`).join("")+(row.site&&!siteOf(row.site)?`<option selected>${esc(row.site)}</option>`:"");
+  $("drawerHost").innerHTML=`<div class="scrim" id="scrim"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+   <header><h2 id="dTitle">${isNew?"Nouveau collaborateur":esc(row.nom+" "+row.prenom)}</h2><button class="btn small ghost" id="dClose" type="button">Fermer</button></header>
+   <div class="body">
+    <div id="calcBox"></div>
+    <fieldset><legend>Collaborateur</legend>
+     <div class="field"><label for="e_nom">Nom</label><input id="e_nom" data-k="nom" value="${esc(row.nom)}"></div>
+     <div class="field"><label for="e_prenom">Prénom</label><input id="e_prenom" data-k="prenom" value="${esc(row.prenom)}"></div>
+     <div class="field"><label for="e_matricule">Matricule</label><input id="e_matricule" data-k="matricule" value="${esc(row.matricule)}"></div>
+     <div class="field"><label for="e_metier">Métier</label><input id="e_metier" data-k="metier" value="${esc(row.metier)}" list="metiers"></div>
+     <div class="field full"><label for="e_repos">Jour(s) de repos</label><input id="e_repos" data-k="repos" value="${esc(row.repos)}" placeholder="ex. Lundi/Mardi"></div>
+    </fieldset>
+    <fieldset><legend>Domicile → magasin</legend>
+     <div class="field full"><label for="e_adresse">Adresse</label><input id="e_adresse" data-k="adresse" value="${esc(row.adresse)}" placeholder="N° et rue"></div>
+     <div class="field"><label for="e_cp">Code postal</label><input id="e_cp" data-k="cp" value="${esc(row.cp)}" inputmode="numeric"></div>
+     <div class="field"><label for="e_ville">Ville</label><input id="e_ville" data-k="ville" value="${esc(row.ville)}"></div>
+     <div class="field full"><label for="e_site">Magasin d'affectation</label><select id="e_site" data-k="site">${siteOpts}</select></div>
+     <div class="field full"><label for="e_distance">Distance domicile → magasin (km, aller simple)</label>
+      <div class="inline"><input id="e_distance" data-k="distance" type="number" step="0.1" min="0" value="${row.distance??""}"><a class="btn" id="mapsLink" target="_blank" rel="noopener">Itinéraire Maps ↗</a></div>
+      <span class="hint" id="mapsHint">Ouvrez l'itinéraire, puis reportez ici les km affichés par Google Maps.</span></div>
+    </fieldset>
+    <fieldset><legend>Véhicule et activité</legend>
+     <div class="field full"><label for="e_vehicule">Type de véhicule</label><select id="e_vehicule" data-k="vehicule">${vehOpts}</select></div>
+     <div class="field"><label for="e_conso" id="lConso">Conso /100 km</label><input id="e_conso" data-k="conso" type="number" step="0.01" min="0" value="${row.conso??""}"><span class="hint">Reprise du véhicule, modifiable</span></div>
+     <div class="field"><label for="e_immat">Immatriculation</label><input id="e_immat" data-k="immat" value="${esc(row.immat)}"></div>
+     <div class="field"><label for="e_jours">Jours travaillés / semaine</label><input id="e_jours" data-k="jours" type="number" step="1" min="0" max="7" value="${row.jours??""}"></div>
+     <div class="field"><label for="e_tournee">Tournée km / jour</label><input id="e_tournee" data-k="tournee" type="number" step="1" min="0" value="${row.tournee??""}"><span class="hint">Reprise du magasin, modifiable</span></div>
+    </fieldset>
+    <datalist id="metiers">${[...new Set(S.rows.map(r=>r.metier).filter(Boolean))].map(m=>`<option value="${esc(m)}">`).join("")}</datalist>
+   </div>
+   <footer id="dFoot"></footer>
+  </aside>`;
+  renderDrawerFoot();renderCalc();updateMaps();
+  $("scrim").onclick=closeDrawer;$("dClose").onclick=closeDrawer;
+  const body=document.querySelector(".drawer .body");
+  body.addEventListener("input",onField);body.addEventListener("change",onField);
+  document.addEventListener("keydown",escClose);
+  setTimeout(()=>{(isNew?$("e_nom"):$("dClose")).focus()},30);
+}
+function renderDrawerFoot(){
+  const f=$("dFoot");if(!f)return;
+  if(isNew){f.innerHTML=`<button class="btn ghost" id="dCancel" type="button">Annuler</button><button class="btn primary" id="dSave" type="button">Ajouter</button>`;
+    $("dCancel").onclick=()=>{editing=null;closeDrawer()};
+    $("dSave").onclick=()=>{S.rows.unshift(editing);save();editing=null;closeDrawer();renderAll()};return}
+  if(confirmDel){f.innerHTML=`<div class="confirmbar"><span>Supprimer ce collaborateur ?</span><button class="btn small" id="dNo" type="button">Non</button><button class="btn small" style="color:var(--warn)" id="dYes" type="button">Supprimer</button></div>`;
+    $("dNo").onclick=()=>{confirmDel=false;renderDrawerFoot()};$("dYes").onclick=()=>{S.rows=S.rows.filter(x=>x!==editing);save();closeDrawer();renderAll()};return}
+  f.innerHTML=`<button class="btn ghost" id="dDel" type="button" style="color:var(--warn)">Supprimer</button><button class="btn primary" id="dDone" type="button">Terminé</button>`;
+  $("dDel").onclick=()=>{confirmDel=true;renderDrawerFoot()};$("dDone").onclick=closeDrawer;
+}
+function escClose(e){if(e.key==="Escape")closeDrawer()}
+function closeDrawer(){$("drawerHost").innerHTML="";document.removeEventListener("keydown",escClose);renderSiteFilter();renderRows()}
+function onField(e){
+  const k=e.target.dataset.k;if(!k||!editing)return;
+  let v=e.target.value;
+  if(["distance","jours","tournee","conso"].includes(k))v=numOrNull(v);
+  editing[k]=v;
+  if(k==="vehicule"&&e.type==="change"){const veh=vehOf(v);if(veh&&veh.conso!=null){editing.conso=veh.conso;$("e_conso").value=veh.conso}}
+  if(k==="site"&&e.type==="change"){const s=siteOf(v);if(s&&s.tournee!=null){editing.tournee=s.tournee;$("e_tournee").value=s.tournee}}
+  if(!isNew){save();renderRows()}
+  renderCalc();updateMaps();
+  if(k==="nom"||k==="prenom"){if(!isNew)$("dTitle").textContent=(editing.nom+" "+editing.prenom).trim()||"Collaborateur"}
+}
+function updateMaps(){
+  const a=$("mapsLink");if(!a)return;const u=mapsUrl(editing);
+  if(u){a.href=u;a.removeAttribute("aria-disabled");a.style.opacity="";a.style.pointerEvents="";$("mapsHint").textContent="Ouvrez l'itinéraire, puis reportez ici les km affichés par Google Maps."}
+  else{a.removeAttribute("href");a.setAttribute("aria-disabled","true");a.style.opacity=".5";a.style.pointerEvents="none";$("mapsHint").textContent="Renseignez l'adresse (ou au moins CP et ville) et le magasin pour ouvrir l'itinéraire."}
+  const l=$("lConso");if(l)l.textContent=isElec(editing)?"Conso kWh /100 km":"Conso L /100 km";
+}
+function renderCalc(){
+  const box=$("calcBox");if(!box)return;const c=calc(editing),u=c.elec?"kWh":"L";
+  box.innerHTML=`<div class="calcsheet${c.elec?" elec":""}">
+   <div class="line"><span class="lbl">Km par jour <code>${fmt(c.d||0,1)} × 2 + ${fmt0(c.t||0)}</code></span><span class="val">${fmt(c.kmJour,1)} km</span></div>
+   <div class="line"><span class="lbl">Km par mois <code>× ${c.j||0} j × ${fmt(c.sem,2)}</code></span><span class="val">${fmt(c.kmMois,1)} km</span></div>
+   <div class="line key"><span class="lbl">Besoin ${c.elec?"électricité":"carburant"} / mois <code>× ${fmt(c.c||0,2)} ÷ 100</code></span><span class="val">${fmt(c.besoin,1)} ${u}</span></div>
+   <div class="line"><span class="lbl">Plafond hebdo <code>÷ ${fmt(c.sem,2)}</code></span><span class="val">${fmt(c.hebdo,1)} ${u}</span></div>
+   <div class="line"><span class="lbl">Ratio par jour travaillé <code>÷ ${c.j||0} j</code></span><span class="val">${c.ratio!=null?fmt(c.ratio,1)+" "+u:"—"}</span></div>
+  </div>${c.missing.length?`<div class="missing">Manque : ${esc(c.missing.join(", "))}.</div>`:""}`;
+}
+$("rows").addEventListener("click",e=>{const tr=e.target.closest("tr.row");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r)});
+$("rows").addEventListener("keydown",e=>{if(e.key!=="Enter")return;const tr=e.target.closest("tr.row");if(!tr)return;const r=S.rows.find(x=>x.id===tr.dataset.id);if(r)openDrawer(r)});
+$("btnAdd").onclick=()=>{const fs=$("fSite").value;const s=siteOf(fs);openDrawer({id:uid(),nom:"",prenom:"",matricule:"",metier:"Livreur",adresse:"",cp:"",ville:"",site:fs||"",vehicule:"",immat:"",distance:null,jours:5,tournee:s?s.tournee:null,conso:null,repos:""},true)};
+
+/* ---------- import Excel ---------- */
+const norm=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+const H={nom:["nom"],prenom:["prenom"],matricule:["matricule"],metier:["metier","fonction"],site:["affectation","magasin","site"],vehicule:["type vehicule"],immat:["vehicule","immatriculation"],a1:["adresse ligne 1","adresse"],a2:["adresse ligne 2"],a3:["adresse ligne 3"],cp:["cp","code postal"],ville:["ville"],distance:["distance domicile magasin"],jours:["jours travailles hebdo"],conso:["conso moyenne vehicule"],tournee:["distance parcourue par jour en fonction du site","tournee km jour"],repos:["jour de repos"],actif:["actif non actif"],energie:["energie"]};
+const isElecName=n=>/(^|\s)E-|ELECTR|ÉLECTR|\bZOE\b|E-TECH/i.test(n||"");
+function mode(arr){const m=new Map();arr.forEach(v=>m.set(v,(m.get(v)||0)+1));let best=null,bc=0;m.forEach((c,v)=>{if(c>bc){bc=c;best=v}});return best}
+$("btnImport").onclick=()=>$("fileInput").click();
+$("fileInput").addEventListener("change",async e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  if(typeof XLSX==="undefined"){showErr("La lecture Excel n'a pas pu se charger. Vérifiez votre connexion et rechargez la page.");return}
+  try{
+    const buf=await f.arrayBuffer();
+    const wb=XLSX.read(buf,{type:"array"});
+    let best=null;
+    for(const name of wb.SheetNames){
+      const aoa=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true});
+      for(let i=0;i<Math.min(aoa.length,15);i++){const hs=(aoa[i]||[]).map(norm);if(hs.includes("nom")&&(hs.includes("distance domicile magasin")||hs.includes("affectation"))){best={aoa,hi:i};break}}
+      if(best)break;
+    }
+    if(!best){showErr("Colonnes introuvables : le fichier doit contenir au moins « Nom », « Affectation » et « Distance Domicile-Magasin ».");return}
+    const hs=best.aoa[best.hi].map(norm);
+    const col={};Object.entries(H).forEach(([k,alts])=>{for(const a of alts){const i=hs.indexOf(a);if(i>=0){col[k]=i;break}}});
+    const get=(row,k)=>{const i=col[k];if(i==null)return null;const v=row[i];return v==null?null:(typeof v==="string"?v.replace(/\s+/g," ").trim():v)};
+    const str=v=>v==null?"":String(v).trim();
+    const rows=[],vehMap=new Map(S.vehicles.map(v=>[v.nom,{...v}])),siteT=new Map();
+    for(let i=best.hi+1;i<best.aoa.length;i++){
+      const row=best.aoa[i];if(!row)continue;
+      const nom=str(get(row,"nom")),prenom=str(get(row,"prenom"));if(!nom&&!prenom)continue;
+      const veh=str(get(row,"vehicule"));const conso=numOrNull(get(row,"conso"));
+      const site=str(get(row,"site"));const tour=numOrNull(get(row,"tournee"));
+      if(veh&&!vehMap.has(veh)){const en=norm(get(row,"energie"));vehMap.set(veh,{id:uid(),nom:veh,conso,energie:(en.startsWith("elec")||isElecName(veh))?"electrique":"thermique"})}
+      else if(veh&&vehMap.get(veh).conso==null&&conso!=null)vehMap.get(veh).conso=conso;
+      if(site){if(!siteT.has(site))siteT.set(site,[]);if(tour!=null)siteT.get(site).push(tour)}
+      const cpRaw=get(row,"cp");
+      rows.push({id:uid(),nom,prenom,matricule:str(get(row,"matricule")),metier:str(get(row,"metier")),
+        adresse:[get(row,"a1"),get(row,"a2"),get(row,"a3")].map(str).filter(Boolean).join(", "),
+        cp:cpRaw==null?"":String(cpRaw).trim().padStart(typeof cpRaw==="number"?5:0,"0"),ville:str(get(row,"ville")),
+        site,vehicule:veh,immat:str(get(row,"immat")),distance:numOrNull(get(row,"distance")),jours:numOrNull(get(row,"jours")),
+        tournee:tour,conso:conso!=null?conso:(veh&&vehMap.get(veh)?vehMap.get(veh).conso:null),repos:str(get(row,"repos"))});
+    }
+    if(!rows.length){showErr("Aucune ligne collaborateur trouvée sous l'en-tête du fichier.");return}
+    const prev=JSON.parse(JSON.stringify(S));
+    const sites=S.sites.map(s=>({...s}));
+    siteT.forEach((ts,name)=>{if(!sites.find(s=>s.nom===name))sites.push({id:uid(),nom:name,adresse:"",tournee:ts.length?mode(ts):50})});
+    sites.sort((a,b)=>a.nom.localeCompare(b.nom,"fr"));
+    S={...S,example:false,source:f.name,rows,vehicles:[...vehMap.values()].sort((a,b)=>a.nom.localeCompare(b.nom,"fr")),sites};
+    const miss=rows.filter(r=>calc(r).missing.length).length;
+    undo={prev,msg:`${rows.length} collaborateurs importés depuis « ${f.name} ». ${miss?miss+" ont des informations manquantes (filtre « À compléter »).":"Tous les calculs sont complets."} La liste précédente a été remplacée.`};
+    $("fSite").value="";$("q").value="";$("fStatus").value="";
+    save();renderAll();
+  }catch(err){showErr("Le fichier n'a pas pu être lu ("+(err&&err.message||err)+"). Enregistrez-le en .xlsx puis réessayez.")}
+});
+function showErr(m){$("notice").innerHTML=`<div class="notice err"><span>${esc(m)}</span><button class="btn small ghost" type="button" id="errX">OK</button></div>`;$("errX").onclick=renderNotice}
+function flash(m){$("notice").innerHTML=`<div class="notice info"><span>${esc(m)}</span></div>`;clearTimeout(flash.t);flash.t=setTimeout(renderNotice,3500)}
+
+/* ---------- export ---------- */
+const COLS=["Nom","Prénom","Matricule","Métier","Adresse","CP","Ville","Affectation","Type Véhicule","Véhicule","Énergie","Distance Domicile-Magasin","Jours travaillés hebdo","Conso moyenne Véhicule","Distance parcourue par Jour en fonction du site","Distance Total / Mois","Besoin Carburant  en litres / mois","Unité","Plafond Hebdo Modèle Calcule","Ratio litres / Jour","Jour de repos"];
+function exportRows(){return filtered().map(r=>{const c=calc(r);return {r,c}})}
+function buildWorkbook(){
+  const list=exportRows();const sem=numOrNull(S.params.sem)||4.33;
+  const ws={};const enc=XLSX.utils.encode_cell;
+  COLS.forEach((h,i)=>ws[enc({r:0,c:i})]={t:"s",v:h});
+  list.forEach(({r,c},k)=>{
+    const R=k+1,n=R+1;
+    const put=(i,v)=>{if(v==null||v==="")return;ws[enc({r:R,c:i})]=typeof v==="number"?{t:"n",v}:{t:"s",v:String(v)}};
+    put(0,r.nom);put(1,r.prenom);put(2,r.matricule);put(3,r.metier);put(4,r.adresse);put(5,r.cp);put(6,r.ville);put(7,r.site);put(8,r.vehicule);put(9,r.immat);put(10,c.elec?"Électrique":"Thermique");
+    put(11,c.d);put(12,c.j);put(13,c.c);put(14,c.t);
+    ws[enc({r:R,c:15})]={t:"n",v:c.kmMois,f:`(L${n}*2+O${n})*M${n}*${sem}`,z:"0.0"};
+    ws[enc({r:R,c:16})]={t:"n",v:c.besoin,f:`(P${n}*N${n})/100`,z:"0.0"};
+    put(17,c.elec?"kWh":"L");
+    ws[enc({r:R,c:18})]={t:"n",v:c.hebdo,f:`Q${n}/${sem}`,z:"0.0"};
+    ws[enc({r:R,c:19})]=c.ratio!=null?{t:"n",v:c.ratio,f:`IFERROR(S${n}/M${n},"")`,z:"0.0"}:{t:"s",v:"",f:`IFERROR(S${n}/M${n},"")`};
+    put(20,r.repos);
+  });
+  ws["!ref"]=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}});
+  ws["!cols"]=COLS.map((h,i)=>({wch:i<2?16:Math.min(Math.max(h.length,10),28)}));
+  ws["!autofilter"]={ref:XLSX.utils.encode_range({s:{r:0,c:0},e:{r:Math.max(list.length,1),c:COLS.length-1}})};
+  // Feuille synthèse par magasin
+  const bySite=new Map();list.forEach(({r,c})=>{const k=r.site||"(sans magasin)";if(!bySite.has(k))bySite.set(k,{n:0,km:0,L:0,K:0});const o=bySite.get(k);o.n++;o.km+=c.kmMois;c.elec?o.K+=c.besoin:o.L+=c.besoin});
+  const synth=[["Magasin","Collaborateurs","Km / mois","Carburant L / mois","Électricité kWh / mois","Plafond hebdo carburant (L)"]];
+  [...bySite.entries()].sort((a,b)=>a[0].localeCompare(b[0],"fr")).forEach(([k,o])=>synth.push([k,o.n,+o.km.toFixed(1),+o.L.toFixed(1),+o.K.toFixed(1),+(o.L/sem).toFixed(1)]));
+  const ws2=XLSX.utils.aoa_to_sheet(synth);ws2["!cols"]=[{wch:36},{wch:14},{wch:12},{wch:18},{wch:20},{wch:24}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Besoin carburant");XLSX.utils.book_append_sheet(wb,ws2,"Synthèse magasins");
+  return wb;
+}
+/* Dans un artifact Claude : capacité « downloads ». Hors artifact (GitHub Pages, fichier local) : téléchargement direct. */
+const inArtifact=!!(window.claude&&window.claude.use);
+let downloads=null;
+(async()=>{if(!inArtifact)return;try{downloads=await window.claude.use("downloads")}catch(e){downloads=null}
+  if(!downloads){const b=$("btnExport");b.disabled=true;b.title="L'export de fichier n'est pas disponible ici : utilisez « Copier le tableau » puis collez dans Excel."}})();
+$("btnExport").onclick=async()=>{
+  if(typeof XLSX==="undefined"){showErr("La génération Excel n'a pas pu se charger. Utilisez « Copier le tableau ».");return}
+  const d=new Date();const name=`besoin_carburant_${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}.xlsx`;
+  if(!inArtifact){try{XLSX.writeFile(buildWorkbook(),name);flash("Fichier Excel téléchargé : "+name)}catch(err){showErr("L'export n'a pas abouti ("+(err&&err.message||err)+").")}return}
+  if(!downloads){flash("L'export de fichier n'est pas disponible ici. Utilisez « Copier le tableau » puis collez dans Excel.");return}
+  try{
+    await downloads.save({filename:name,data:XLSX.write(buildWorkbook(),{bookType:"xlsx",type:"array"})});flash("Fichier Excel enregistré : "+name)}
+  catch(err){const code=err&&err.code;if(code==="declined")return;if(code==="rate_limited"){flash("Un enregistrement est déjà en cours, réessayez dans un instant.");return}flash("L'export n'a pas abouti. Utilisez « Copier le tableau » puis collez dans Excel.")}
+};
+$("btnCopy").onclick=async()=>{
+  const list=exportRows();
+  const lines=[COLS.join("\t")].concat(list.map(({r,c})=>[r.nom,r.prenom,r.matricule,r.metier,r.adresse,r.cp,r.ville,r.site,r.vehicule,r.immat,c.elec?"Électrique":"Thermique",c.d??"",c.j??"",c.c??"",c.t??"",fmt(c.kmMois,1),fmt(c.besoin,2),c.elec?"kWh":"L",fmt(c.hebdo,2),c.ratio!=null?fmt(c.ratio,2):"",r.repos].map(v=>typeof v==="number"?String(v).replace(".",","):String(v??"").replace(/[\t\n]/g," ")).join("\t")));
+  const text=lines.join("\n");
+  try{await navigator.clipboard.writeText(text);flash(`${list.length} lignes copiées. Collez-les dans Excel (Ctrl+V).`)}
+  catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();flash(ok?`${list.length} lignes copiées.`:"La copie a été refusée par le navigateur.")}
+};
+
+renderAll();
+})();
+</script>
+
+</body>
+</html>

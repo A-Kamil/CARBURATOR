@@ -1,0 +1,6 @@
+# Ne jamais versionner les fichiers collaborateurs (adresses, téléphones…)
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+.DS_Store
