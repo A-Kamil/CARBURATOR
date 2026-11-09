@@ -572,9 +572,9 @@ function reposShort(r){const p=parseRepos(r.repos);if(p.variable)return "repos v
 /* works = travaille ce jour, off = repos (ou dimanche), check = impossible à dire */
 function dayStatus(r,d){
   const p=parseRepos(r.repos),j=numOrNull(r.jours);
-  if(p.variable)return{s:"check",why:"Planning variable"};
+  if(d===6)return{s:"off"};if(p.variable)return{s:"check",why:"Planning variable"};
   if(!p.days.length&&p.bad.length)return{s:"check",why:"Jour de repos illisible"};
-  if(p.days.includes(d)||d===6)return{s:"off"};
+  if(p.days.includes(d))return{s:"off"};
   if(!p.days.length){if(j>=6)return{s:"works"};return{s:"check",why:"Jour de repos non renseigné"}}
   const cand=6-p.days.filter(x=>x<6).length;
   if(!j||cand<=j)return{s:"works"};
